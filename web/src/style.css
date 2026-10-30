@@ -907,42 +907,31 @@ select {
   margin-bottom: 0;
 }
 .account-setting-actions {
-  overflow: hidden;
-  border: 1px solid #e3e6eb;
-  border-radius: var(--surface-radius);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 .account-setting-action {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  min-height: 42px;
-  padding: 11px 12px;
-  border: 0;
-  background: transparent;
+  flex: none;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid #dfe2e7;
+  background: #e8eaee;
   color: #18191c;
   font-size: 12px;
-  text-align: left;
-}
-.account-setting-action + .account-setting-action {
-  border-top: 1px solid #eeeff2;
+  line-height: 16px;
 }
 .account-setting-action:hover {
-  background: #f3f5f7;
-}
-.account-setting-action:focus-visible {
-  outline-offset: -3px;
-}
-.account-setting-action svg {
-  width: 14px;
-  height: 14px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
+  background: #dfe2e7;
 }
 .account-settings .delete-account-button {
+  border-color: #a33d36;
+  background: #fff;
   color: #a33d36;
+}
+.account-settings .delete-account-button:hover {
+  background: #fcf3f2;
 }
 .form-submit.delete-account-button {
   background: #a33d36;

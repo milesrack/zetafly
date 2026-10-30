@@ -260,9 +260,6 @@ export function Inspector({
                   }}
                 >
                   Change password
-                  <svg aria-hidden="true" viewBox="0 0 16 16">
-                    <path d="m6 4 4 4-4 4" />
-                  </svg>
                 </button>
                 <button
                   type="button"
@@ -273,9 +270,6 @@ export function Inspector({
                   }}
                 >
                   Delete account
-                  <svg aria-hidden="true" viewBox="0 0 16 16">
-                    <path d="m6 4 4 4-4 4" />
-                  </svg>
                 </button>
               </div>
             </fieldset>
