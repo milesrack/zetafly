@@ -4,6 +4,7 @@ import type { accessVerifier } from "./access.ts";
 import type { createAuth } from "./auth.ts";
 import type { readConfig } from "./config.ts";
 import { asError } from "./errors.ts";
+import { type OwnerMutation, OwnerOperations } from "./owner-operations.ts";
 import { Preferences } from "./preferences.ts";
 import { accessRoutes, authRoutes } from "./routes/access.ts";
 import { preferencesRoutes } from "./routes/preferences.ts";
@@ -29,6 +30,7 @@ export type AppDependencies = {
   identify: ReturnType<typeof accessVerifier>;
   config: ReturnType<typeof readConfig>;
   disconnectSession: (id: string) => void;
+  operations?: OwnerOperations;
 };
 
 export function createApp({
@@ -39,6 +41,7 @@ export function createApp({
   identify,
   config,
   disconnectSession,
+  operations = new OwnerOperations(),
 }: AppDependencies) {
   const app = express();
 
@@ -53,7 +56,7 @@ export function createApp({
     next();
   });
 
-  app.use(authRoutes(auth, sessions, disconnectSession));
+  app.use(authRoutes(auth, sessions, disconnectSession, operations));
 
   app.use(express.json({ limit: "8kb" }));
 
@@ -98,9 +101,22 @@ export function createApp({
   });
 
   const preferences = new Preferences(db, weights);
-  app.use(preferencesRoutes(preferences));
-  app.use(weightsRoutes(weights, sessions, preferences));
-  app.use(runsRoutes(db, sessions));
+  const mutate: OwnerMutation = (handler) => async (req, res) => {
+    await operations.run(req.userId, async () => {
+      // A queued request may have authenticated before this account was deleted.
+      if (!(await identify(req))) {
+        res.status(401).json({ error: "Log in to use Zetafly" });
+
+        return;
+      }
+
+      await handler(req, res);
+    });
+  };
+
+  app.use(preferencesRoutes(preferences, mutate));
+  app.use(weightsRoutes(weights, sessions, preferences, mutate));
+  app.use(runsRoutes(db, sessions, mutate));
 
   app.use("/api", (_req, res) =>
     res.status(404).json({ error: "Unknown endpoint" }),

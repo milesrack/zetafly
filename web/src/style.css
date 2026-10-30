@@ -915,6 +915,27 @@ select {
 .account-menu .form-error {
   margin: 4px 10px;
 }
+.account-menu .delete-account-button {
+  color: #a33d36;
+}
+.form-submit.delete-account-button {
+  background: #a33d36;
+  color: #fff;
+}
+.account-content .delete-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.account-content .delete-confirmation input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+}
 .activity-empty {
   display: grid;
   place-items: center;

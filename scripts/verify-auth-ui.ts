@@ -293,6 +293,91 @@ for (const engine of [chromium, webkit]) {
 
     await page.keyboard.press("Escape");
     assert.equal(await page.locator("dialog[open]").count(), 0);
+
+    let deletionAttempts = 0;
+    let finishDeletion = () => {};
+    await page.route("**/api/auth/delete-user", async (route) => {
+      deletionAttempts++;
+
+      if (deletionAttempts === 1) {
+        await route.fulfill({
+          status: 400,
+          json: { code: "INVALID_PASSWORD", message: "Invalid password" },
+        });
+
+        return;
+      }
+
+      await new Promise<void>((resolve) => {
+        finishDeletion = resolve;
+      });
+
+      await route.fulfill({
+        json: { success: true, message: "User deleted" },
+      });
+    });
+
+    await badge.click();
+    await page
+      .getByRole("button", { name: "Delete account", exact: true })
+      .click();
+    const deleting = page.getByRole("dialog", {
+      name: "Delete account",
+      exact: true,
+    });
+    const deletePassword = deleting.getByLabel("Current password", {
+      exact: true,
+    });
+    const confirmation = deleting.getByRole("checkbox");
+    const deleteButton = deleting.getByRole("button", {
+      name: "Delete account permanently",
+    });
+    await accessibility(page);
+    await deletePassword.fill("incorrect-password");
+    await deleteButton.click();
+    assert.equal(
+      deletionAttempts,
+      0,
+      "Deletion requires explicit acknowledgement",
+    );
+    await confirmation.check();
+    await deleteButton.click();
+    await deleting.getByRole("alert").waitFor();
+    assert.match(
+      await deleting.getByRole("alert").innerText(),
+      /Invalid password/,
+    );
+    await deleting.getByRole("button", { name: "Cancel", exact: true }).click();
+    await badge.click();
+    await page
+      .getByRole("button", { name: "Delete account", exact: true })
+      .click();
+    assert.equal(await deletePassword.inputValue(), "");
+    assert.equal(await confirmation.isChecked(), false);
+    assert.equal(await deleting.getByRole("alert").count(), 0);
+    await deletePassword.fill("correct-password");
+    await confirmation.check();
+    await deleteButton.click();
+    await deleting.getByRole("button", { name: "Deleting account…" }).waitFor();
+    await page.keyboard.press("Escape");
+    assert.ok(
+      await deleting.isVisible(),
+      "Pending deletion cannot be dismissed",
+    );
+    assert.ok(
+      await deleting
+        .getByRole("button", { name: "Cancel", exact: true })
+        .isDisabled(),
+    );
+    await page.route("**/api/auth/get-session", (route) =>
+      route.fulfill({ json: null }),
+    );
+    finishDeletion();
+    await page
+      .locator("header")
+      .getByRole("button", { name: "Log in", exact: true })
+      .waitFor();
+    assert.equal(await deleting.count(), 0);
     await page.close();
 
     const guestContext = await browser.newContext();
@@ -460,7 +545,7 @@ for (const engine of [chromium, webkit]) {
     assert.deepEqual(errors, []);
 
     console.log(
-      `${engine.name()}: refreshed run errors, copy expiry/retry, menu errors, nested Escape, auth dismissal, password clearing, signup/verification, reset links, and late responses passed`,
+      `${engine.name()}: refreshed run errors, copy expiry/retry, menu errors, nested Escape, auth dismissal, password clearing, signup/verification, reset links, late responses and account deletion passed`,
     );
   } finally {
     await browser.close();

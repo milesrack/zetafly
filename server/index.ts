@@ -6,6 +6,7 @@ import { createAuth } from "./auth.ts";
 import { readConfig } from "./config.ts";
 import { prepareDatabase } from "./database.ts";
 import { LiveConnections } from "./live.ts";
+import { OwnerOperations } from "./owner-operations.ts";
 import { SessionManager } from "./session-manager.ts";
 import { Weights } from "./weights.ts";
 
@@ -20,10 +21,14 @@ await client.connect();
 const db = client.db(process.env.MONGODB_DATABASE?.trim() || "zetafly");
 await prepareDatabase(db);
 
-const auth = createAuth(db);
+const auth = createAuth(db, async (ownerId) => {
+  await sessions.remove(ownerId);
+  live.disconnectOwner(ownerId);
+});
 const weights = new Weights(db);
 const identify = accessVerifier(auth, db);
-const live = new LiveConnections(identify, config.origins);
+const operations = new OwnerOperations();
+const live = new LiveConnections(identify, config.origins, operations);
 const sessions = new SessionManager(
   db,
   (ownerId, packet) => live.broadcast(ownerId, packet),
@@ -37,6 +42,7 @@ const app = createApp({
   identify,
   config,
   disconnectSession: (id) => live.disconnectSession(id),
+  operations,
 });
 const server = createServer(app);
 live.attach(server, sessions);

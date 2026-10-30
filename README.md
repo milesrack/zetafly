@@ -35,6 +35,10 @@ docker compose up --build -d
 - App: [localhost:3000](http://localhost:3000)
 - Email: [localhost:8025](http://localhost:8025)
 
+To delete your account, open **Account → Delete account**, enter your current
+password and confirm. This permanently removes your saved runs, preferences and
+uploaded weights, stops your active run and revokes all your sessions.
+
 ## Configuration
 
 Edit `.env` for production:
