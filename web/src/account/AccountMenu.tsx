@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { authClient, type User } from "./auth-client";
-import { DeleteAccount } from "./DeleteAccount";
 
 export function AccountMenu({
   user,
@@ -15,7 +14,6 @@ export function AccountMenu({
   const [copied, setCopied] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!copied) {
@@ -134,19 +132,7 @@ export function AccountMenu({
           </svg>
           {busy ? "Logging out…" : "Log out"}
         </button>
-        <button
-          type="button"
-          className="delete-account-button"
-          disabled={busy}
-          onClick={() => {
-            popover.current?.hidePopover();
-            setDeleting(true);
-          }}
-        >
-          Delete account
-        </button>
       </div>
-      {deleting && <DeleteAccount close={() => setDeleting(false)} />}
     </>
   );
 }

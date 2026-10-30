@@ -410,18 +410,6 @@ select {
 .setting select {
   width: 132px;
 }
-.sources {
-  margin-top: 28px;
-  font-size: 10px;
-  color: var(--muted-text);
-}
-.sources summary {
-  cursor: pointer;
-}
-.sources a {
-  display: block;
-  margin-top: 14px;
-}
 @media (max-width: 640px) {
   .app-header {
     height: 60px;
@@ -915,7 +903,45 @@ select {
 .account-menu .form-error {
   margin: 4px 10px;
 }
-.account-menu .delete-account-button {
+.account-settings {
+  margin-bottom: 0;
+}
+.account-setting-actions {
+  overflow: hidden;
+  border: 1px solid #e3e6eb;
+  border-radius: var(--surface-radius);
+}
+.account-setting-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 11px 12px;
+  border: 0;
+  background: transparent;
+  color: #18191c;
+  font-size: 12px;
+  text-align: left;
+}
+.account-setting-action + .account-setting-action {
+  border-top: 1px solid #eeeff2;
+}
+.account-setting-action:hover {
+  background: #f3f5f7;
+}
+.account-setting-action:focus-visible {
+  outline-offset: -3px;
+}
+.account-setting-action svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.account-settings .delete-account-button {
   color: #a33d36;
 }
 .form-submit.delete-account-button {

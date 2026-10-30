@@ -294,6 +294,102 @@ for (const engine of [chromium, webkit]) {
     await page.keyboard.press("Escape");
     assert.equal(await page.locator("dialog[open]").count(), 0);
 
+    let passwordChanges = 0;
+    let finishPasswordChange = () => {};
+    await page.route("**/api/auth/change-password", async (route) => {
+      passwordChanges++;
+      const body = route.request().postDataJSON();
+      assert.equal(body.newPassword, "Jade!Harbour9-Saturn2-copper");
+      assert.equal(body.revokeOtherSessions, true);
+
+      if (passwordChanges === 1) {
+        await route.fulfill({
+          status: 400,
+          json: { message: "Invalid password" },
+        });
+        return;
+      }
+
+      assert.equal(body.currentPassword, "correct-password");
+      await new Promise<void>((resolve) => {
+        finishPasswordChange = resolve;
+      });
+      await route.fulfill({ json: { token: "new-session", user } });
+    });
+
+    await badge.click();
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Change password", exact: true })
+      .click();
+    const changing = page.getByRole("dialog", {
+      name: "Change password",
+      exact: true,
+    });
+    await accessibility(page);
+    await changing
+      .getByLabel("Current password", { exact: true })
+      .fill("incorrect-password");
+    await changing
+      .getByLabel("New password", { exact: true })
+      .fill("Jade!Harbour9-Saturn2-copper");
+    await changing
+      .getByLabel("Confirm new password", { exact: true })
+      .fill("different-password");
+    await changing
+      .getByRole("button", { name: "Change password", exact: true })
+      .click();
+    await changing.getByRole("alert").waitFor();
+    assert.match(await changing.getByRole("alert").innerText(), /do not match/);
+    assert.equal(passwordChanges, 0);
+    await changing
+      .getByLabel("Confirm new password", { exact: true })
+      .fill("Jade!Harbour9-Saturn2-copper");
+    await changing
+      .getByRole("button", { name: "Change password", exact: true })
+      .click();
+    await changing.getByRole("alert").waitFor();
+    assert.match(
+      await changing.getByRole("alert").innerText(),
+      /Invalid password/,
+    );
+    await changing
+      .getByLabel("Current password", { exact: true })
+      .fill("correct-password");
+    const renewed = page.waitForRequest(
+      (request) =>
+        request.url().endsWith("/api/access") && request.method() === "POST",
+    );
+    await changing
+      .getByRole("button", { name: "Change password", exact: true })
+      .click();
+    await changing
+      .getByRole("button", { name: "Changing password…" })
+      .waitFor();
+    await page.keyboard.press("Escape");
+    assert.ok(await changing.isVisible());
+    finishPasswordChange();
+    await changing.getByRole("status").waitFor();
+    await renewed;
+    await accessibility(page);
+    await changing.getByRole("button", { name: "Done", exact: true }).click();
+    await badge.click();
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Change password", exact: true })
+      .click();
+    for (const name of [
+      "Current password",
+      "New password",
+      "Confirm new password",
+    ]) {
+      assert.equal(
+        await changing.getByLabel(name, { exact: true }).inputValue(),
+        "",
+      );
+    }
+    await changing.getByRole("button", { name: "Cancel", exact: true }).click();
+
     let deletionAttempts = 0;
     let finishDeletion = () => {};
     await page.route("**/api/auth/delete-user", async (route) => {
@@ -318,6 +414,14 @@ for (const engine of [chromium, webkit]) {
     });
 
     await badge.click();
+    assert.equal(
+      await page
+        .getByRole("button", { name: "Delete account", exact: true })
+        .count(),
+      0,
+      "Account deletion belongs in Settings, not the account menu",
+    );
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
     await page
       .getByRole("button", { name: "Delete account", exact: true })
       .click();
@@ -349,6 +453,7 @@ for (const engine of [chromium, webkit]) {
     );
     await deleting.getByRole("button", { name: "Cancel", exact: true }).click();
     await badge.click();
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
     await page
       .getByRole("button", { name: "Delete account", exact: true })
       .click();

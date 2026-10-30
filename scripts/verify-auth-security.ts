@@ -37,7 +37,12 @@ try {
   await db.collection("user").createIndex({ email: 1 }, { unique: true });
   const auth = createAuth(db);
 
-  async function send(path: string, body: unknown, ip = `192.0.2.${++count}`) {
+  async function send(
+    path: string,
+    body: unknown,
+    ip = `192.0.2.${++count}`,
+    cookie = "",
+  ) {
     const response = await auth.handler(
       new Request(`${base}/api/auth/${path}`, {
         method: "POST",
@@ -45,6 +50,7 @@ try {
           "Content-Type": "application/json",
           Origin: base,
           "x-zetafly-client-ip": ip,
+          Cookie: cookie,
         },
         body: JSON.stringify(body),
       }),
@@ -278,7 +284,72 @@ try {
     assert.equal(result.response.status, attempt === 5 ? 429 : 401);
   }
 
-  console.log("Authentication security passed");
+  await db
+    .collection("user")
+    .updateOne({ _id: user._id }, { $set: { emailVerified: true } });
+  const firstLogin = await send("sign-in/email", { email, password });
+  const secondLogin = await send("sign-in/email", { email, password });
+  assert.equal(firstLogin.response.status, 200);
+  assert.equal(secondLogin.response.status, 200);
+  const cookies = (response: Response) =>
+    response.headers
+      .getSetCookie()
+      .map((cookie) => cookie.split(";")[0])
+      .join("; ");
+  const currentCookie = cookies(firstLogin.response);
+  const otherCookie = cookies(secondLogin.response);
+  const nextPassword = randomBytes(24).toString("base64url");
+  const invalidChange = await send(
+    "change-password",
+    {
+      currentPassword: "incorrect-password",
+      newPassword: nextPassword,
+      revokeOtherSessions: true,
+    },
+    undefined,
+    currentCookie,
+  );
+  assert.equal(invalidChange.response.status, 400);
+  assert.ok(
+    await auth.api.getSession({
+      headers: new Headers({ Cookie: otherCookie }),
+    }),
+  );
+  const changed = await send(
+    "change-password",
+    {
+      currentPassword: password,
+      newPassword: nextPassword,
+      revokeOtherSessions: true,
+    },
+    undefined,
+    currentCookie,
+  );
+  assert.equal(changed.response.status, 200);
+  for (const cookie of [currentCookie, otherCookie]) {
+    assert.equal(
+      await auth.api.getSession({ headers: new Headers({ Cookie: cookie }) }),
+      null,
+    );
+  }
+  assert.ok(
+    await auth.api.getSession({
+      headers: new Headers({ Cookie: cookies(changed.response) }),
+    }),
+  );
+  assert.equal(
+    (await send("sign-in/email", { email, password })).response.status,
+    401,
+  );
+  assert.equal(
+    (await send("sign-in/email", { email, password: nextPassword })).response
+      .status,
+    200,
+  );
+
+  console.log(
+    "Authentication security passed, including password change and session revocation",
+  );
 } finally {
   globalThis.fetch = originalFetch;
   await db.dropDatabase();
