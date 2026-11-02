@@ -6,8 +6,8 @@ import type {
   Position as P,
   PhysicalFrame,
   PhysicalKey,
-} from "../../shared/contracts.ts";
-import { KEYS } from "../../shared/keyboard.ts";
+} from "../../../shared/contracts.ts";
+import { KEYS } from "../../../shared/keyboard.ts";
 import { Computer } from "./Computer";
 import { DeskObjects } from "./DeskObjects";
 import { DeskChair, SeatedDeskFly } from "./DeskSeat";

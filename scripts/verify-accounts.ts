@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import WebSocket from "ws";
-import type { LabPacket, Settings } from "../shared/contracts.ts";
+import type { SessionPacket, Settings } from "../shared/contracts.ts";
 import { DEFAULT_SETTINGS } from "../shared/settings.ts";
 import type {
   AccountResponse,
@@ -274,10 +274,13 @@ await json<Settings>(
   }),
 );
 
-const messagesA: LabPacket[] = [];
-const messagesB: LabPacket[] = [];
+const messagesA: SessionPacket[] = [];
+const messagesB: SessionPacket[] = [];
 
-function connect(instance: ReturnType<typeof client>, messages: LabPacket[]) {
+function connect(
+  instance: ReturnType<typeof client>,
+  messages: SessionPacket[],
+) {
   return new Promise<WebSocket>((resolve, reject) => {
     const socket = new WebSocket(`${base.replace("http", "ws")}/live`, {
       origin: base,
@@ -285,7 +288,7 @@ function connect(instance: ReturnType<typeof client>, messages: LabPacket[]) {
     });
 
     socket.on("message", (raw) => {
-      messages.push(JSON.parse(raw.toString()) as LabPacket);
+      messages.push(JSON.parse(raw.toString()) as SessionPacket);
 
       if (messages.length === 1) {
         resolve(socket);

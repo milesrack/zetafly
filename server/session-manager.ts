@@ -1,5 +1,9 @@
 import type { Db } from "mongodb";
-import type { LabPacket, LabState, Settings } from "../shared/contracts.ts";
+import type {
+  SessionPacket,
+  SessionState,
+  Settings,
+} from "../shared/contracts.ts";
 import { Session } from "./session.ts";
 import type { Weights } from "./weights.ts";
 
@@ -10,10 +14,10 @@ type CurrentSession = {
   cleanup?: () => Promise<void>;
 };
 
-type OwnerBroadcast = (ownerId: string, packet: LabPacket) => void;
+type OwnerBroadcast = (ownerId: string, packet: SessionPacket) => void;
 
 // Share one browser and brain worker across accounts.
-export class Laboratory {
+export class SessionManager {
   declare db: Db;
   declare broadcast: OwnerBroadcast;
   declare weights: Weights;
@@ -26,7 +30,7 @@ export class Laboratory {
     this.claiming = false;
   }
 
-  state(ownerId: string): LabState {
+  state(ownerId: string): SessionState {
     return this.current?.ownerId === ownerId
       ? this.current.session.state
       : {

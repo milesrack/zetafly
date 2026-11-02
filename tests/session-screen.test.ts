@@ -4,10 +4,10 @@ import type { Db } from "mongodb";
 import { Motor } from "../server/motor.ts";
 import { Session } from "../server/session.ts";
 import { DEFAULTS } from "../server/settings.ts";
-import type { LabPacket } from "../shared/contracts.ts";
+import type { SessionPacket } from "../shared/contracts.ts";
 
 test("fresh setup stays visible during model loading without starting the game", async () => {
-  const packets: LabPacket[] = [];
+  const packets: SessionPacket[] = [];
   const ready = Promise.withResolvers<void>();
   const loading = Promise.withResolvers<void>();
   const session = new Session(

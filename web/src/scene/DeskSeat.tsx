@@ -2,8 +2,8 @@ import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { Euler, Matrix4, type Mesh, Quaternion, Vector3 } from "three";
-import type { PhysicalFrame } from "../../shared/contracts.ts";
-import { handPositions } from "../../shared/keyboard.ts";
+import type { PhysicalFrame } from "../../../shared/contracts.ts";
+import { handPositions } from "../../../shared/keyboard.ts";
 import { FlyBody } from "./FlyBody";
 
 type P = [number, number, number];

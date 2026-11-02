@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { outsideDialog } from "../components/dialog";
 import { authClient, type User } from "./auth-client";
-import { outsideDialog } from "./dialog";
 import { PasswordInput } from "./PasswordInput";
 
 type Mode = "login" | "signup" | "verify" | "forgot" | "sent" | "reset";

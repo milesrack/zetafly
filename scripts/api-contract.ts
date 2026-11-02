@@ -1,22 +1,41 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { Ajv } from "ajv";
 import addFormats from "ajv-formats";
 import type { OpenAPIV3 } from "openapi-types";
 
-export async function apiContract() {
+async function routeSources(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const sources: string[] = [];
+
+  for (const entry of entries) {
+    const path = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      sources.push(...(await routeSources(path)));
+    } else if (entry.name.endsWith(".ts")) {
+      sources.push(await readFile(path, "utf8"));
+    }
+  }
+
+  return sources;
+}
+
+export async function apiContract(serverDirectory = "server") {
   const document = (await SwaggerParser.validate(
     "openapi.yaml",
   )) as OpenAPIV3.Document;
-  const routes = await readFile("server/index.ts", "utf8");
 
-  for (const [, method, route] of routes.matchAll(
-    /app\.(get|post|put|patch|delete)\("([^"\n]+)"/g,
-  )) {
-    const path = route!.replace(/:([a-zA-Z]+)/g, "{$1}");
-    const operation = document.paths[path]?.[method as OpenAPIV3.HttpMethods];
-    assert.ok(operation, `Undocumented ${method!.toUpperCase()} ${path}`);
+  for (const source of await routeSources(serverDirectory)) {
+    for (const [, method, route] of source.matchAll(
+      /\b(?:app|router)\s*\.\s*(get|post|put|patch|delete)\s*\(\s*["']([^"']+)["']/g,
+    )) {
+      const path = route!.replace(/:([a-zA-Z]+)/g, "{$1}");
+      const operation = document.paths[path]?.[method as OpenAPIV3.HttpMethods];
+      assert.ok(operation, `Undocumented ${method!.toUpperCase()} ${path}`);
+    }
   }
 
   const ajv = new Ajv({ allErrors: true });

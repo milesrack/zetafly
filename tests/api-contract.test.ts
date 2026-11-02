@@ -47,3 +47,34 @@ test("the API contract rejects response drift and fields that could leak private
     ),
   );
 });
+
+test("documentation discovery checks feature routers in nested directories", async () => {
+  const { mkdtemp, mkdir, writeFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const directory = await mkdtemp(join(tmpdir(), "zetafly-routes-"));
+
+  try {
+    await mkdir(join(directory, "routes"));
+    await writeFile(
+      join(directory, "routes", "feature.ts"),
+      `
+      router.get(
+        "/api/undocumented",
+        handler,
+      );
+    `,
+    );
+    await assert.rejects(
+      () => apiContract(directory),
+      /Undocumented GET \/api\/undocumented/,
+    );
+    await writeFile(
+      join(directory, "routes", "feature.ts"),
+      `router.get("/api/runs/:id", handler);`,
+    );
+    await apiContract(directory);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

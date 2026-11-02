@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Account, hasPasswordReset } from "./Account";
-import { AccountMenu } from "./AccountMenu";
-import { useAccess } from "./access";
-import { authClient } from "./auth-client";
-import { Inspector } from "./Inspector";
-import { useLab } from "./lab";
-import { SoundButton } from "./PlaybackSound";
-import { usePreferences } from "./preferences";
-import { SessionScene } from "./SessionScene";
-import { useSound } from "./useSound";
+import { Account, hasPasswordReset } from "./account/Account";
+import { AccountMenu } from "./account/AccountMenu";
+import { useAccess } from "./account/access";
+import { authClient } from "./account/auth-client";
+import { SoundButton } from "./audio/PlaybackSound";
+import { useSound } from "./audio/useSound";
+import { SessionScene } from "./scene/SessionScene";
+import { useFlySession } from "./session/useFlySession";
+import { Inspector } from "./settings/Inspector";
+import { usePreferences } from "./settings/preferences";
 
 const views = ["desk", "keyboard", "screen", "brain"] as const;
 
@@ -18,14 +18,14 @@ export function App() {
   const verified = Boolean(user?.emailVerified);
   const access = useAccess(verified ? user?.id : undefined);
   const authorisedId = access ? user?.id : undefined;
-  const lab = useLab(authorisedId);
+  const session = useFlySession(authorisedId);
   const preferences = usePreferences(authorisedId);
   const [view, setView] = useState("desk");
   const [sessionOpen, setSessionOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(hasPasswordReset);
   const sound = useSound();
   const { settings, setSettings } = preferences;
-  const { state } = lab;
+  const { state } = session;
   const running = ["loading", "running"].includes(state.status);
 
   return (
@@ -39,13 +39,13 @@ export function App() {
             className="run-button"
             title={running ? "Stop the current run" : "Start a new run"}
             disabled={
-              lab.busy ||
+              session.busy ||
               isPending ||
-              Boolean(verified && (!lab.connected || !preferences.ready))
+              Boolean(verified && (!session.connected || !preferences.ready))
             }
             onClick={() =>
               verified
-                ? lab.act(
+                ? session.act(
                     running ? "stop" : "start",
                     running ? undefined : settings,
                   )
@@ -141,22 +141,22 @@ export function App() {
           <SessionScene
             key={user?.id}
             sound={sound}
-            recordings={lab.recordings}
-            moments={lab.moments}
+            recordings={session.recordings}
+            moments={session.moments}
             state={state}
-            png={lab.png}
+            png={session.png}
             view={view}
-            clockOffset={lab.clockOffset}
+            clockOffset={session.clockOffset}
           />
         </div>
-        {lab.error && (
+        {session.error && (
           <div className="error-toast" role="alert">
-            <span>{lab.error}</span>
+            <span>{session.error}</span>
             <button
               type="button"
               className="icon-button"
               aria-label="Dismiss error"
-              onClick={lab.clearError}
+              onClick={session.clearError}
             >
               <svg aria-hidden="true" viewBox="0 0 20 20">
                 <path d="m5 5 10 10M15 5 5 15" />

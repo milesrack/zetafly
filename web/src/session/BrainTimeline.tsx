@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Choice } from "./Choice";
+import { Choice } from "../components/Choice";
 import { PLAYBACK_SPEEDS, type usePlayback } from "./usePlayback";
 
 export function formatTime(seconds: number) {

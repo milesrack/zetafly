@@ -29,6 +29,18 @@ npm run test:e2e
 
 For simulator changes, run `npm run model:fetch && npm run test:simulator`.
 
+## Code organisation
+
+- `server/index.ts` connects dependencies and owns startup and shutdown. `server/app.ts` constructs Express without connecting to MongoDB or opening a listening port.
+- `server/routes/` contains HTTP handlers grouped by feature. Keep full `/api/...` paths as string literals on `router` so `scripts/api-contract.ts` can check them against `openapi.yaml`.
+- `server/session-manager.ts` controls ownership of the shared browser and model worker. `server/session.ts` executes and records sessions; `server/live.ts` handles WebSocket connections, broadcasts and session invalidation.
+- `server/preferences.ts` owns preference recovery, validation and persistence. `server/weights.ts` owns checkpoint storage and validation; `server/brain/` contains the model runtime.
+- `web/src/` groups account, session, settings, scene and audio code by feature. Reusable UI lives in `components/`; HTTP helpers live in `api.ts`; `App.tsx` assembles the interface.
+- `shared/` contains client/server contracts and shared rules. Import these directly rather than re-exporting them through a frontend hook.
+- `research/` contains experimental and reference implementations. `scripts/` contains training, data preparation and verification tools. Keep generated results out of Git.
+
+For HTTP regression tests, construct `createApp` with test dependencies and listen on an ephemeral port. Keep startup side effects out of imported route and application modules.
+
 ## Pull requests
 
 Use [Conventional Commits](https://www.conventionalcommits.org/), for example `fix: preserve playback position`. Open pull requests against `main`, link the related issue, and describe how you tested the change. Include screenshots for visible UI changes.

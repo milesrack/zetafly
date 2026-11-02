@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
-} from "../../shared/password-policy.ts";
+} from "../../../shared/password-policy.ts";
 
 export function PasswordInput({ creating }: { creating: boolean }) {
   const [value, setValue] = useState("");
@@ -27,7 +27,7 @@ export function PasswordInput({ creating }: { creating: boolean }) {
 
     let active = true;
     const timer = setTimeout(() => {
-      import("../../shared/password-strength.ts")
+      import("../../../shared/password-strength.ts")
         .then(({ passwordStrength }) => {
           if (active) {
             setAssessment({ input: value, score: passwordStrength(value) });

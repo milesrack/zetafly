@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Profile as WeightProfile } from "../../shared/contracts.ts";
-import { apiFetch } from "./auth-client";
-import { DEFAULT_SETTINGS, request } from "./lab";
+import type { Profile as WeightProfile } from "../../../shared/contracts.ts";
+import { DEFAULT_SETTINGS } from "../../../shared/settings.ts";
+import { apiFetch, request } from "../api";
 
 export type Profile = Pick<WeightProfile, "id" | "name" | "arithmeticMode">;
 

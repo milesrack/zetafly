@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
-import { Choice } from "./Choice";
-import { outsideDialog } from "./dialog";
-import type { RangeKey, Settings } from "./lab";
+import type { RangeKey, Settings } from "../../../shared/contracts.ts";
+import type { Sound } from "../audio/useSound";
+import { Choice } from "../components/Choice";
+import { outsideDialog } from "../components/dialog";
+import { RangeInput } from "../components/RangeInput";
 import type { Profile, ProfileSearch } from "./preferences";
-import { RangeInput } from "./RangeInput";
-import type { Sound } from "./useSound";
 import { WeightPicker } from "./WeightPicker";
 import { WeightUpload } from "./WeightUpload";
 

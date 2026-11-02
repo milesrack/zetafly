@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { NeuralActivity } from "../shared/contracts.ts";
-import { activityAt } from "../web/src/activity.ts";
-import { addRecording, recordingAt } from "../web/src/recordings.ts";
+import { activityAt } from "../web/src/session/activity.ts";
+import { addRecording, recordingAt } from "../web/src/session/recordings.ts";
 
 const neural: NeuralActivity = {
   spikes: [

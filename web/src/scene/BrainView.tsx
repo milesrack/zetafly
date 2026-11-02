@@ -7,9 +7,9 @@ import {
   ShaderMaterial,
   Vector3,
 } from "three";
-import { sampleNeurons } from "../../shared/neural";
-import { activityAt } from "./activity";
-import type { Neural } from "./lab";
+import type { NeuralActivity as Neural } from "../../../shared/contracts.ts";
+import { sampleNeurons } from "../../../shared/neural";
+import { activityAt } from "../session/activity";
 
 type Anatomy = {
   positions: Float32Array;

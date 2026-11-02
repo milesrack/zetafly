@@ -1,4 +1,4 @@
-import type { PhysicalFrame } from "../../shared/contracts.ts";
+import type { PhysicalFrame } from "../../../shared/contracts.ts";
 
 export type Moment = {
   time: number;

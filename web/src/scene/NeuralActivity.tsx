@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Neural } from "./lab";
+import type { NeuralActivity as Neural } from "../../../shared/contracts.ts";
 
 export function NeuralActivity({
   neural,

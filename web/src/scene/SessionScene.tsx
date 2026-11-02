@@ -1,13 +1,13 @@
 import { useState } from "react";
-import type { LabState } from "../../shared/contracts.ts";
-import { BrainTimeline } from "./BrainTimeline";
+import type { SessionState } from "../../../shared/contracts.ts";
+import { usePlaybackSound } from "../audio/PlaybackSound";
+import type { Sound } from "../audio/useSound";
+import { BrainTimeline } from "../session/BrainTimeline";
+import { type Moment, momentAt } from "../session/moments";
+import type { Recording } from "../session/recordings";
+import { usePlayback } from "../session/usePlayback";
 import { BrainView } from "./BrainView";
-import { type Moment, momentAt } from "./moments";
 import { NeuralActivity } from "./NeuralActivity";
-import { usePlaybackSound } from "./PlaybackSound";
-import type { Recording } from "./recordings";
-import { usePlayback } from "./usePlayback";
-import type { Sound } from "./useSound";
 import { World } from "./World";
 
 export function SessionScene({
@@ -22,7 +22,7 @@ export function SessionScene({
   sound: Sound;
   recordings: Recording[];
   moments: Moment[];
-  state: LabState;
+  state: SessionState;
   png: string | null;
   view: string;
   clockOffset: number;

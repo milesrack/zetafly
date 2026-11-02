@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto";
 import type { Db } from "mongodb";
 import type {
   Broadcast,
-  LabPacket,
-  LabState,
   Profile,
   RunEvent,
+  SessionPacket,
+  SessionState,
   Settings,
 } from "../shared/contracts.ts";
 import { BrowserComputer } from "./browser.ts";
@@ -22,7 +22,7 @@ export class Session {
   declare broadcast: Broadcast;
   declare computer: BrowserComputer;
   declare worker: NeuralWorker;
-  declare state: LabState;
+  declare state: SessionState;
   declare profile: SessionProfile | undefined;
   declare events: RunEvent[] | undefined;
   declare previewing: boolean | undefined;
@@ -66,7 +66,7 @@ export class Session {
     };
   }
 
-  send(packet: LabPacket) {
+  send(packet: SessionPacket) {
     this.broadcast(
       packet.kind === "state" ? { ...packet, serverTime: Date.now() } : packet,
     );

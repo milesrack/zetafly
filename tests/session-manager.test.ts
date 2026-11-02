@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Laboratory } from "../server/laboratory.ts";
 import type { Session } from "../server/session.ts";
+import { SessionManager } from "../server/session-manager.ts";
 
 test("another user cannot replace an active or preparing brain session", async () => {
-  const lab = new Laboratory(
-    {} as unknown as ConstructorParameters<typeof Laboratory>[0],
+  const sessions = new SessionManager(
+    {} as unknown as ConstructorParameters<typeof SessionManager>[0],
     () => {},
-    {} as unknown as ConstructorParameters<typeof Laboratory>[2],
+    {} as unknown as ConstructorParameters<typeof SessionManager>[2],
   );
 
-  lab.current = {
+  sessions.current = {
     ownerId: "alice",
     session: {
       running: true,
@@ -21,33 +21,33 @@ test("another user cannot replace an active or preparing brain session", async (
   };
 
   await assert.rejects(
-    lab.claim("bob"),
+    sessions.claim("bob"),
     (error) =>
       error instanceof Error && "status" in error && error.status === 409,
   );
 
-  lab.current.session.running = false;
-  lab.current.session.previewing = true;
+  sessions.current.session.running = false;
+  sessions.current.session.previewing = true;
 
   await assert.rejects(
-    lab.claim("bob"),
+    sessions.claim("bob"),
     (error) =>
       error instanceof Error && "status" in error && error.status === 409,
   );
 
-  assert.equal(lab.state("bob").status, "idle");
-  assert.equal(lab.state("alice").status, "running");
+  assert.equal(sessions.state("bob").status, "idle");
+  assert.equal(sessions.state("alice").status, "running");
 });
 
 test("stopping another account does not stop the owner", async () => {
-  const lab = new Laboratory(
-    {} as unknown as ConstructorParameters<typeof Laboratory>[0],
+  const sessions = new SessionManager(
+    {} as unknown as ConstructorParameters<typeof SessionManager>[0],
     () => {},
-    {} as unknown as ConstructorParameters<typeof Laboratory>[2],
+    {} as unknown as ConstructorParameters<typeof SessionManager>[2],
   );
   let stopped = false;
 
-  lab.current = {
+  sessions.current = {
     ownerId: "alice",
     session: {
       stop: async () => {
@@ -57,9 +57,9 @@ test("stopping another account does not stop the owner", async () => {
     profileId: null,
   };
 
-  await lab.stop("bob");
+  await sessions.stop("bob");
   assert.equal(stopped, false);
-  await lab.stop("alice");
+  await sessions.stop("alice");
   assert.equal(stopped, true);
 });
 

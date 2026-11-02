@@ -1,48 +1,19 @@
 import { useEffect, useState } from "react";
 import type {
-  LabPacket,
-  LabState,
   PhysicalFrame,
+  SessionPacket,
+  SessionState,
   Settings,
-} from "../../shared/contracts.ts";
-import { apiFetch } from "./auth-client";
+} from "../../../shared/contracts.ts";
+import { request } from "../api";
 import { addMoment, type Moment } from "./moments";
 import { addRecording, type Recording } from "./recordings";
 
-export type {
-  LabState,
-  NeuralActivity as Neural,
-  RangeKey,
-  Settings,
-  Trial,
-} from "../../shared/contracts.ts";
-
-export { DEFAULT_SETTINGS } from "../../shared/settings.ts";
-
-export async function request(
-  path: string,
-  body: unknown = {},
-  method = "POST",
-) {
-  const response = await apiFetch(`/api/${path}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.error);
-  }
-
-  return result;
-}
-
-export function useLab(userId?: string) {
+export function useFlySession(userId?: string) {
   const [moments, setMoments] = useState<Moment[]>([]);
   const [clockOffset, setClockOffset] = useState(0);
   const [recordings, setRecordings] = useState<Recording[]>([]);
-  const [state, setState] = useState<LabState>({
+  const [state, setState] = useState<SessionState>({
     status: "idle",
     keys: [],
     frame: null,
@@ -133,7 +104,7 @@ export function useLab(userId?: string) {
           return;
         }
 
-        const packet = JSON.parse(event.data) as LabPacket;
+        const packet = JSON.parse(event.data) as SessionPacket;
 
         if (packet.kind === "screen") {
           if (packet.runId !== runId) {

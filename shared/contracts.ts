@@ -71,7 +71,7 @@ export type Trial = Problem &
     answerSource: string;
   };
 
-export type LabState = {
+export type SessionState = {
   runId?: string;
   serverTime?: number;
   startedAt?: number;
@@ -125,9 +125,9 @@ export type RunEvent = (
   MotorFrame | InputEvent | AttemptEvent | PredictionEvent
 ) & { time?: number };
 
-export type LabPacket =
+export type SessionPacket =
   | RunEvent
-  | ({ kind: "state" } & LabState)
+  | ({ kind: "state" } & SessionState)
   | { kind: "screen"; png: string; time?: number; runId?: string }
   | { kind: "activity"; neural: NeuralActivity; timing?: ActivityTiming };
 
@@ -140,4 +140,4 @@ export type Profile = {
   sha256: string;
 };
 
-export type Broadcast = (packet: LabPacket) => void;
+export type Broadcast = (packet: SessionPacket) => void;

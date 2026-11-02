@@ -1,4 +1,4 @@
-import type { NeuralActivity } from "../../shared/contracts.ts";
+import type { NeuralActivity } from "../../../shared/contracts.ts";
 
 export function activityAt(neural: NeuralActivity | undefined, time: number) {
   const activity = new Map<number, number>();

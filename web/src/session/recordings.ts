@@ -1,4 +1,7 @@
-import type { ActivityTiming, NeuralActivity } from "../../shared/contracts.ts";
+import type {
+  ActivityTiming,
+  NeuralActivity,
+} from "../../../shared/contracts.ts";
 
 export type Recording = {
   id: string;

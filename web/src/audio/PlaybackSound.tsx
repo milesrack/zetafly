@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef } from "react";
-import type { PhysicalFrame } from "../../shared/contracts.ts";
-import type { Moment } from "./moments";
-import type { usePlayback } from "./usePlayback";
+import type { PhysicalFrame } from "../../../shared/contracts.ts";
+import type { Moment } from "../session/moments";
+import type { usePlayback } from "../session/usePlayback";
 import type { Sound } from "./useSound";
 
 export function usePlaybackSound(

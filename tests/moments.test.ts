@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { addMoment, type Moment, momentAt } from "../web/src/moments.ts";
+import {
+  addMoment,
+  type Moment,
+  momentAt,
+} from "../web/src/session/moments.ts";
 
 test("screen and keyboard replay selects only the last captured state at the playhead", () => {
   const frames: Moment[] = [

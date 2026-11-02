@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { renewAccess } from "./auth-client";
+import { renewAccess } from "../api";
 
 export function useAccess(userId?: string) {
   const [ready, setReady] = useState(false);
