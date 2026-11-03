@@ -415,9 +415,17 @@ export class Session {
         this.state.error = (gameError ?? asError(error)).message;
       }
     } finally {
-      await this.worker.close();
       clearInterval(endWatcher);
       clearTimeout(endTimeout);
+      clearInterval(this.captureTimer);
+      this.captureTimer = undefined;
+
+      try {
+        await this.worker.close();
+      } catch (error) {
+        this.state.status = "failed";
+        this.state.error ??= `Worker shutdown failed: ${asError(error).message}`;
+      }
 
       if (["loading", "running"].includes(this.state.status)) {
         this.state.status = this.running ? "completed" : "stopped";
@@ -425,8 +433,6 @@ export class Session {
 
       this.state.endedAt = Date.now();
       this.running = false;
-      clearInterval(this.captureTimer);
-      this.captureTimer = undefined;
 
       if (gameFinished) {
         await this.computer.waitForResults().catch(() => {});
@@ -464,11 +470,13 @@ export class Session {
     const active = this.running;
     this.running = false;
 
-    if (active) {
-      await this.worker.close();
+    try {
+      if (active) {
+        await this.worker.close();
+      }
+    } finally {
+      await this.task;
     }
-
-    await this.task;
   }
 
   async close() {
