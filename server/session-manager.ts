@@ -131,4 +131,26 @@ export class SessionManager {
       await this.current.cleanup?.();
     }
   }
+
+  async remove(ownerId: string) {
+    if (this.claiming) {
+      throw Object.assign(new Error("The computer is preparing; try again"), {
+        status: 409,
+      });
+    }
+
+    if (this.current?.ownerId !== ownerId) {
+      return;
+    }
+
+    this.claiming = true;
+
+    try {
+      await this.current.session.close();
+      await this.current.cleanup?.();
+      this.current = null;
+    } finally {
+      this.claiming = false;
+    }
+  }
 }

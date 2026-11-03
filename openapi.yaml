@@ -444,6 +444,65 @@ paths:
           $ref: "#/components/responses/Error500"
       tags:
         - Runs
+  /api/auth/delete-user:
+    post:
+      operationId: deleteOwnAccount
+      summary: Permanently delete the authenticated account and its data
+      description: >-
+        Requires the current password, even for a fresh session. Stops the owner's
+        active run, disconnects all of their live sessions, and removes their runs,
+        preferences, uploaded weight files, credentials and sessions. Waits for
+        outstanding account writes before cleanup. On failure, retry while signed in.
+      tags:
+        - Authentication
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  minLength: 1
+                  maxLength: 128
+      responses:
+        "200":
+          description: Account and owned data deleted; session cookies cleared
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+                  message:
+                    type: string
+                    enum: [User deleted]
+        "400":
+          $ref: "#/components/responses/AuthError400"
+        "401":
+          $ref: "#/components/responses/AuthError401"
+        "403":
+          $ref: "#/components/responses/AuthError403"
+        "409":
+          description: The shared computer is preparing; retry shortly
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthError"
+        "429":
+          $ref: "#/components/responses/AuthError429"
+        "500":
+          $ref: "#/components/responses/AuthError500"
   /api/auth/sign-up/email:
     post:
       operationId: signUpWithEmailAndPassword

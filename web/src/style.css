@@ -410,18 +410,6 @@ select {
 .setting select {
   width: 132px;
 }
-.sources {
-  margin-top: 28px;
-  font-size: 10px;
-  color: var(--muted-text);
-}
-.sources summary {
-  cursor: pointer;
-}
-.sources a {
-  display: block;
-  margin-top: 14px;
-}
 @media (max-width: 640px) {
   .app-header {
     height: 60px;
@@ -914,6 +902,54 @@ select {
 }
 .account-menu .form-error {
   margin: 4px 10px;
+}
+.account-settings {
+  margin-bottom: 0;
+}
+.account-setting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.account-setting-action {
+  flex: none;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid #dfe2e7;
+  background: #e8eaee;
+  color: #18191c;
+  font-size: 12px;
+  line-height: 16px;
+}
+.account-setting-action:hover {
+  background: #dfe2e7;
+}
+.account-settings .delete-account-button {
+  border-color: #a33d36;
+  background: #fff;
+  color: #a33d36;
+}
+.account-settings .delete-account-button:hover {
+  background: #fcf3f2;
+}
+.form-submit.delete-account-button {
+  background: #a33d36;
+  color: #fff;
+}
+.account-content .delete-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.account-content .delete-confirmation input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
 }
 .activity-empty {
   display: grid;

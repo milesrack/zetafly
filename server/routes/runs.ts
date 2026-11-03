@@ -1,9 +1,14 @@
 import { Router } from "express";
 import type { Db } from "mongodb";
+import type { OwnerMutation } from "../owner-operations.ts";
 import type { SessionManager } from "../session-manager.ts";
 import { parseSettings } from "../settings.ts";
 
-export function runsRoutes(db: Db, sessions: SessionManager) {
+export function runsRoutes(
+  db: Db,
+  sessions: SessionManager,
+  mutate: OwnerMutation,
+) {
   const router = Router();
 
   router.get("/api/runs", async (req, res) =>
@@ -29,22 +34,31 @@ export function runsRoutes(db: Db, sessions: SessionManager) {
     res.json(run);
   });
 
-  router.post("/api/preview", async (req, res) => {
-    const session = await sessions.claim(req.userId);
-    await session.preview();
-    res.json({ ok: true });
-  });
+  router.post(
+    "/api/preview",
+    mutate(async (req, res) => {
+      const session = await sessions.claim(req.userId);
+      await session.preview();
+      res.json({ ok: true });
+    }),
+  );
 
-  router.post("/api/start", async (req, res) => {
-    const settings = parseSettings(req.body);
-    await sessions.start(req.userId, settings);
-    res.status(202).json({ status: "loading" });
-  });
+  router.post(
+    "/api/start",
+    mutate(async (req, res) => {
+      const settings = parseSettings(req.body);
+      await sessions.start(req.userId, settings);
+      res.status(202).json({ status: "loading" });
+    }),
+  );
 
-  router.post("/api/stop", async (req, res) => {
-    await sessions.stop(req.userId);
-    res.json({ status: sessions.state(req.userId).status });
-  });
+  router.post(
+    "/api/stop",
+    mutate(async (req, res) => {
+      await sessions.stop(req.userId);
+      res.json({ status: sessions.state(req.userId).status });
+    }),
+  );
 
   return router;
 }
