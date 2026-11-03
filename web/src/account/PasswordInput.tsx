@@ -4,7 +4,17 @@ import {
   MIN_PASSWORD_LENGTH,
 } from "../../../shared/password-policy.ts";
 
-export function PasswordInput({ creating }: { creating: boolean }) {
+export function PasswordInput({
+  creating,
+  id = "account-password",
+  name = "password",
+  disabled = false,
+}: {
+  creating: boolean;
+  id?: string;
+  name?: string;
+  disabled?: boolean;
+}) {
   const [value, setValue] = useState("");
   const [visible, setVisible] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -13,6 +23,7 @@ export function PasswordInput({ creating }: { creating: boolean }) {
     score: number;
   } | null>(null);
   const tooLong = value.length > MAX_PASSWORD_LENGTH;
+  const feedbackId = `${id}-feedback`;
   const score = assessment?.input === value ? assessment.score : null;
   const met =
     value.length >= MIN_PASSWORD_LENGTH &&
@@ -62,16 +73,15 @@ export function PasswordInput({ creating }: { creating: boolean }) {
     <>
       <div className="password-input">
         <input
-          id="account-password"
-          name="password"
+          id={id}
+          name={name}
+          disabled={disabled}
           type={visible ? "text" : "password"}
           autoComplete={creating ? "new-password" : "current-password"}
           required
           minLength={creating ? MIN_PASSWORD_LENGTH : 1}
           value={value}
-          aria-describedby={
-            creating || tooLong ? "password-feedback" : undefined
-          }
+          aria-describedby={creating || tooLong ? feedbackId : undefined}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onChange={(event) => {
@@ -88,6 +98,7 @@ export function PasswordInput({ creating }: { creating: boolean }) {
         <button
           type="button"
           className="password-reveal"
+          disabled={disabled}
           aria-label={visible ? "Hide password" : "Show password"}
           aria-pressed={visible}
           onClick={() => setVisible(!visible)}
@@ -98,7 +109,7 @@ export function PasswordInput({ creating }: { creating: boolean }) {
       {(creating || tooLong) && (
         <div
           className="password-feedback"
-          id="password-feedback"
+          id={feedbackId}
           data-visible={focused || Boolean(value)}
           data-met={met}
           data-invalid={tooLong}

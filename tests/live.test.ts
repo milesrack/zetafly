@@ -76,7 +76,12 @@ test("live connections reject invalid handshakes and isolate owner broadcasts an
     kind: "screen",
     png: "bob-only",
   });
+  const aliceOther = connect("alice");
+  await once(aliceOther, "message");
+  const closedOther = once(aliceOther, "close");
   const closed = once(alice, "close");
+  live.disconnectOwner("alice");
+  assert.equal((await closedOther)[0], 1000);
   live.disconnectSession("alice-session");
   assert.equal((await closed)[0], 1000);
   assert.equal(bob.readyState, WebSocket.OPEN);
