@@ -8,7 +8,13 @@ import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { promisify } from "node:util";
 import type { Request, Response } from "express";
-import { type Collection, type Db, GridFSBucket, type ObjectId } from "mongodb";
+import {
+  type Collection,
+  type Db,
+  GridFSBucket,
+  MongoRuntimeError,
+  type ObjectId,
+} from "mongodb";
 import type { Profile } from "../shared/contracts.ts";
 import {
   DEFAULT_WEIGHTS,
@@ -301,7 +307,20 @@ export class Weights {
     }
 
     const profile = await this.get(ownerId, id);
-    await this.bucket.delete(stored(profile).fileId);
+    const { fileId } = stored(profile);
+
+    try {
+      await this.bucket.delete(fileId);
+    } catch (error) {
+      // GridFS clears leftover chunks before reporting that the file is missing.
+      if (
+        !(error instanceof MongoRuntimeError) ||
+        error.message !== `File not found for id ${fileId}`
+      ) {
+        throw error;
+      }
+    }
+
     await this.collection.deleteOne({ ownerId, id });
   }
 
