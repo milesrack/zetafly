@@ -1,0 +1,49 @@
+# Use auto and LF by default
+* text=auto eol=lf
+
+# Flutter
+*.dart text
+pubspec.yaml text
+pubspec.lock text linguist-generated=true
+analysis_options.yaml text
+.metadata text
+
+# Android
+*.kt text
+*.kts text
+*.java text
+*.gradle text
+*.properties text
+*.xml text
+
+# iOS
+*.swift text
+*.h text
+*.m text
+*.mm text
+*.pbxproj text
+*.xcconfig text
+*.xcsettings text
+*.xcscheme text
+*.xcworkspacedata text
+*.storyboard text
+*.plist text
+*.json text
+
+# Git
+*.md text
+.gitignore text
+.gitattributes text
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.icns binary
+*.jar binary
+*.so binary
+*.dylib binary
+*.a binary
