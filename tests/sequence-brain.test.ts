@@ -3,7 +3,7 @@ import test from "node:test";
 import { cachedLoss, trainReadout } from "../scripts/readout-training.ts";
 import { decodeArchive, encodeArchive } from "../server/brain/arrays.ts";
 import { runPolicy } from "../server/brain/policy.ts";
-import { SequenceBrain } from "../server/brain/sequence.ts";
+import { SequenceTrainer } from "../server/brain/sequence-training.ts";
 
 const graph = {
   inputs: [0],
@@ -29,7 +29,7 @@ test("sequence BPTT includes earlier symbols, neuronal memory, embeddings, gains
     [0.25, 3],
     [3, 3],
   ]) {
-    const model = new SequenceBrain(graph, {
+    const model = new SequenceTrainer(graph, {
       ...options,
       coupling,
       hidden,
@@ -59,7 +59,7 @@ test("sequence BPTT includes earlier symbols, neuronal memory, embeddings, gains
 });
 
 test("numeric decoding preserves neural choices and reserves an end token", () => {
-  const model = new SequenceBrain(graph, options);
+  const model = new SequenceTrainer(graph, options);
   model.parameters.fill(0, model.headStart);
   model.parameters[model.headStart + 9 * 4 + 3] = 10;
 
@@ -83,7 +83,7 @@ test("numeric decoding preserves neural choices and reserves an end token", () =
 });
 
 test("sequence checkpoints preserve optimiser state and frozen training changes only the head", () => {
-  const model = new SequenceBrain(graph, options);
+  const model = new SequenceTrainer(graph, options);
   const rows = [
     { expression: "0+0", answer: "1" },
     { expression: "0*0", answer: "2" },
@@ -94,7 +94,7 @@ test("sequence checkpoints preserve optimiser state and frozen training changes 
   assert.equal(model.internalUpdates, 0);
   model.learn(rows, 0.01);
   assert.notDeepEqual(model.parameters.slice(0, model.headStart), before);
-  const restored = SequenceBrain.restore(graph, model.checkpoint());
+  const restored = SequenceTrainer.restore(graph, model.checkpoint());
   assert.deepEqual(restored.predict("0+0"), model.predict("0+0"));
   model.learn(rows, 0.01);
   restored.learn(rows, 0.01);
@@ -114,7 +114,7 @@ test("sequence checkpoints preserve optimiser state and frozen training changes 
 
   assert.throws(
     () =>
-      SequenceBrain.restore(
+      SequenceTrainer.restore(
         { ...graph, weights: new Float64Array([0, 0, 0]) },
         model.checkpoint(),
       ),
@@ -123,15 +123,15 @@ test("sequence checkpoints preserve optimiser state and frozen training changes 
 });
 
 test("sequence coupling changes signal propagation and survives checkpoint restoration", () => {
-  const baseline = new SequenceBrain(graph, options);
-  const stronger = new SequenceBrain(graph, { ...options, coupling: 3 });
+  const baseline = new SequenceTrainer(graph, options);
+  const stronger = new SequenceTrainer(graph, { ...options, coupling: 3 });
 
   assert.notDeepEqual(
     stronger.features("2+3", "5"),
     baseline.features("2+3", "5"),
   );
 
-  const restored = SequenceBrain.restore(graph, stronger.checkpoint());
+  const restored = SequenceTrainer.restore(graph, stronger.checkpoint());
   assert.equal(restored.options.coupling, 3);
 
   assert.deepEqual(
@@ -140,12 +140,12 @@ test("sequence coupling changes signal propagation and survives checkpoint resto
   );
 
   assert.throws(
-    () => new SequenceBrain(graph, { ...options, coupling: Number.NaN }),
+    () => new SequenceTrainer(graph, { ...options, coupling: Number.NaN }),
   );
 });
 
 test("legacy sequence checkpoints retain the original recurrent scaling", () => {
-  const model = new SequenceBrain(graph, options);
+  const model = new SequenceTrainer(graph, options);
   const arrays = Object.fromEntries(
     Object.entries(decodeArchive(model.checkpoint())).map(([name, row]) => {
       if (row.dtype === "U") {
@@ -171,7 +171,7 @@ test("legacy sequence checkpoints retain the original recurrent scaling", () => 
       dtype: "<f8",
     },
   });
-  const restored = SequenceBrain.restore(graph, legacy);
+  const restored = SequenceTrainer.restore(graph, legacy);
   assert.equal(restored.options.coupling, 0.25);
   assert.deepEqual(restored.predict("17*6"), model.predict("17*6"));
 });
@@ -183,14 +183,14 @@ test("sequence propagation is invariant to sparse-edge storage order", () => {
     post: new Uint32Array([0, 1, 2]),
     weights: new Float64Array([-0.3, 1, 0.7]),
   };
-  const a = new SequenceBrain(graph, { ...options, coupling: 3 });
-  const b = new SequenceBrain(reordered, { ...options, coupling: 3 });
+  const a = new SequenceTrainer(graph, { ...options, coupling: 3 });
+  const b = new SequenceTrainer(reordered, { ...options, coupling: 3 });
   assert.deepEqual(a.features("17*6", "102"), b.features("17*6", "102"));
   assert.deepEqual(a.gradient("17*6", "102"), b.gradient("17*6", "102"));
 });
 
 test("place encoding trains the shared positional projection and round-trips without state leakage", () => {
-  const model = new SequenceBrain(graph, { ...options, encoding: "place" });
+  const model = new SequenceTrainer(graph, { ...options, encoding: "place" });
   const analytic = model.gradient("12+3", "15");
   const epsilon = 1e-5;
 
@@ -223,7 +223,7 @@ test("place encoding trains the shared positional projection and round-trips wit
   assert.equal(model.nextAction(), first);
   assert.throws(() => model.beginProblem("1000**25"));
   assert.throws(() => model.nextAction(), /active problem/);
-  const restored = SequenceBrain.restore(graph, model.checkpoint());
+  const restored = SequenceTrainer.restore(graph, model.checkpoint());
   assert.equal(restored.options.encoding, "place");
   assert.deepEqual(restored.predict("1000+25"), model.predict("1000+25"));
   model.learn([{ expression: "12+3", answer: "15" }]);
@@ -232,12 +232,12 @@ test("place encoding trains the shared positional projection and round-trips wit
 });
 
 test("one exported model accepts different operand lengths without changing its parameters", () => {
-  const model = new SequenceBrain(graph, {
+  const model = new SequenceTrainer(graph, {
     ...options,
     encoding: "place",
     maxKeys: 26,
   });
-  const restored = SequenceBrain.restore(graph, model.checkpoint());
+  const restored = SequenceTrainer.restore(graph, model.checkpoint());
   assert.deepEqual(restored.limits, { maxKeys: 26 });
   const parameters = restored.parameters.slice();
 
@@ -260,7 +260,7 @@ test("one exported model accepts different operand lengths without changing its 
 
 test("numeric decoding masks empty answers, misplaced signs, and unsafe integers without solving the expression", () => {
   for (const maxKeys of [2, 3, 5, 32]) {
-    const model = new SequenceBrain(graph, { ...options, maxKeys });
+    const model = new SequenceTrainer(graph, { ...options, maxKeys });
     const width = options.readout.length + 1;
     model.parameters.fill(0, model.headStart);
     model.parameters[model.headStart + 10 * width + width - 1] = 10;
@@ -284,7 +284,7 @@ test("numeric decoding masks empty answers, misplaced signs, and unsafe integers
 });
 
 test("rejected numeric answers are excluded without changing the model or leaking into another problem", () => {
-  const model = new SequenceBrain(graph, { ...options, maxKeys: 3 });
+  const model = new SequenceTrainer(graph, { ...options, maxKeys: 3 });
   model.parameters.fill(0, model.headStart);
   model.parameters[model.headStart + 5 * 4 + 3] = 8;
   model.parameters[model.headStart + 6 * 4 + 3] = 7;
@@ -306,7 +306,7 @@ test("rejected numeric answers are excluded without changing the model or leakin
 });
 
 test("nonlinear readouts train, preserve frozen neurons, and restore both prediction and optimiser state", () => {
-  const model = new SequenceBrain(graph, {
+  const model = new SequenceTrainer(graph, {
     ...options,
     encoding: "place",
     hidden: 8,
@@ -329,7 +329,7 @@ test("nonlinear readouts train, preserve frozen neurons, and restore both predic
   assert.deepEqual(model.parameters.slice(0, model.headStart), before);
   assert.equal(model.predict("2+3").answer, "5");
   assert.equal(model.predict("3*2").answer, "6");
-  const restored = SequenceBrain.restore(graph, model.checkpoint());
+  const restored = SequenceTrainer.restore(graph, model.checkpoint());
   assert.equal(restored.options.hidden, 8);
   assert.deepEqual(restored.predict("2+3"), model.predict("2+3"));
   model.learn(examples, 0.0001);
@@ -338,7 +338,7 @@ test("nonlinear readouts train, preserve frozen neurons, and restore both predic
 });
 
 test("training callbacks provide a restorable best checkpoint during the run", () => {
-  const model = new SequenceBrain(graph, options);
+  const model = new SequenceTrainer(graph, options);
   const rows = [model.features("2+3", "5"), model.features("3*2", "6")];
   let validations = 0;
   let best = Infinity;
@@ -352,7 +352,7 @@ test("training callbacks provide a restorable best checkpoint during the run", (
       onValidation: (row, checkpoint) => {
         validations++;
         best = Math.min(best, row.loss);
-        const restored = SequenceBrain.restore(graph, checkpoint);
+        const restored = SequenceTrainer.restore(graph, checkpoint);
         assert.ok(cachedLoss(restored, rows, [1, 2]) <= best + 1e-12);
       },
       validationWeights: [1, 2],
@@ -362,7 +362,7 @@ test("training callbacks provide a restorable best checkpoint during the run", (
   assert.equal(validations, 4);
   assert.ok(Number.isFinite(result.loss));
   assert.equal(
-    cachedLoss(SequenceBrain.restore(graph, result.checkpoint), rows, [1, 2]),
+    cachedLoss(SequenceTrainer.restore(graph, result.checkpoint), rows, [1, 2]),
     result.loss,
   );
 });
