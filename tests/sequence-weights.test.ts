@@ -8,7 +8,7 @@ import {
   encodeArchive,
   encodeArray,
 } from "../server/brain/arrays.ts";
-import { SequenceBrain } from "../server/brain/sequence.ts";
+import { SequenceTrainer } from "../server/brain/sequence-training.ts";
 import { restoreWeights, weightsMetadata } from "../server/brain/weights.ts";
 
 import { DEFAULT_SETTINGS } from "../shared/settings.ts";
@@ -20,7 +20,7 @@ const graph = {
   post: new Uint32Array([1, 0]),
   weights: new Float64Array([1, -1]),
 };
-const model = new SequenceBrain(graph, {
+const model = new SequenceTrainer(graph, {
   seed: 42,
   sensory: [0],
   readout: [1],
@@ -125,7 +125,7 @@ test("weights reject code archives and NPY object arrays without executing them"
 });
 
 test("numeric nonlinear readouts pass upload inspection and reject invalid widths", () => {
-  const nonlinear = new SequenceBrain(graph, { ...model.options, hidden: 8 });
+  const nonlinear = new SequenceTrainer(graph, { ...model.options, hidden: 8 });
   const bytes = nonlinear.checkpoint();
   assert.equal(weightsMetadata(bytes).features, 1);
   assert.deepEqual(
@@ -155,17 +155,23 @@ test("numeric nonlinear readouts pass upload inspection and reject invalid width
 });
 
 test("inference exports omit optimiser state and malformed dimensions fail before model construction", () => {
-  const nonlinear = new SequenceBrain(graph, { ...model.options, hidden: 8 });
+  const nonlinear = new SequenceTrainer(graph, { ...model.options, hidden: 8 });
   const inference = restoreWeights(graph, nonlinear.checkpoint());
-  const deployed = decodeArchive(inference.checkpoint());
+  const deployedBytes = inference.checkpoint();
+  const deployed = decodeArchive(deployedBytes);
   assert.equal(deployed.first, undefined);
   assert.equal(deployed.second, undefined);
   assert.deepEqual(
     restoreWeights(graph, inference.checkpoint()).predict("2+3"),
     nonlinear.predict("2+3"),
   );
+  assert.equal("learnFeatures" in inference, false);
+  const inferenceOnlyTrainer = SequenceTrainer.restore(graph, deployedBytes, {
+    inference: true,
+  });
+
   assert.throws(
-    () => inference.learnFeatures(inference.features("2+3", "9")),
+    () => inferenceOnlyTrainer.learnFeatures(inference.features("2+3", "9")),
     /Warm-start/,
   );
   const archive = decodeArchive(nonlinear.checkpoint());

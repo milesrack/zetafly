@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
 import test from "node:test";
 import type { Response } from "express";
+import { MongoRuntimeError } from "mongodb";
 import { Weights } from "../server/weights.ts";
 
 const rows = [
@@ -185,4 +186,43 @@ test("archived ZIP bytes retain their download filename", async () => {
   );
 
   assert.deepEqual(Buffer.concat(received), bytes);
+});
+
+test("weight removal can finish after deleting the file on an earlier attempt", async () => {
+  const weights = Object.create(Weights.prototype) as Weights;
+  let fileExists = true;
+  let profileExists = true;
+  let profileDeleteAttempts = 0;
+  const storageError = new Error("Storage unavailable");
+
+  weights.collection = {
+    findOne: async () => ({ fileId: "file" }),
+    deleteOne: async () => {
+      if (fileExists) {
+        throw new Error("File must be removed first");
+      }
+
+      profileDeleteAttempts++;
+
+      if (profileDeleteAttempts === 1) {
+        throw storageError;
+      }
+
+      profileExists = false;
+    },
+  } as unknown as Weights["collection"];
+  weights.bucket = {
+    delete: async () => {
+      if (!fileExists) {
+        throw new MongoRuntimeError("File not found for id file");
+      }
+
+      fileExists = false;
+    },
+  } as unknown as Weights["bucket"];
+
+  await assert.rejects(weights.remove("alice", "profile"), storageError);
+  assert.equal(profileExists, true);
+  await weights.remove("alice", "profile");
+  assert.equal(profileExists, false);
 });
