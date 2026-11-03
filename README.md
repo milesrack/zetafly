@@ -32,13 +32,8 @@ npm run setup
 docker compose up --build -d
 ```
 
-- App: [localhost:3000](http://localhost:3000)
-- Email: [localhost:8025](http://localhost:8025)
-
-Manage your password and account under **Settings → Account**. Changing your
-password logs out your other sessions. Deleting your account requires your current
-password and confirmation; it permanently removes your saved runs, preferences and
-uploaded weights, stops your active run and revokes all your sessions.
+- **App:** [localhost:3000](http://localhost:3000)
+- **Email:** [localhost:8025](http://localhost:8025)
 
 ## Configuration
 
@@ -53,17 +48,15 @@ Edit `.env` for production:
 | `RESEND_API_KEY`     | Empty locally, your Resend API key in production                 |
 | `EMAIL_FROM`         | Local default, or a sender on your verified domain               |
 
-[Verify your sender domain in Resend](https://resend.com/docs/dashboard/domains/introduction).
-
 ## Development
+
+See [Contributing](CONTRIBUTING.md) for branch conventions and additional checks.
 
 ```sh
 npm run dev --workspace web
 docker compose up --build -d app
 npm run check
 ```
-
-[Contributing](CONTRIBUTING.md)
 
 ## Deployment
 
@@ -74,10 +67,43 @@ Merges to `main` deploy through GitHub Actions.
 3. Point the domain at the server, issue its TLS certificate, and install [the Apache site](deploy/apache/zetafly.conf). For another domain, update the Apache hostname, certificate paths, and deployment workflow URLs. Run `apache2ctl configtest` before reloading Apache.
 4. Add `DEPLOY_SSH_KEY` to the GitHub `production` environment's secrets. Set its `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` variables to the server address and pinned SSH host key.
 
-- Releases: `/var/www/zetafly/releases`
-- Active: `/var/www/zetafly/current`
+- **Releases:** `/var/www/zetafly/releases`
+- **Active release:** `/var/www/zetafly/current`
 
-Back up the MongoDB volume and `shared/.env`. Roll back by running Compose from the previous release and repointing `current`.
+### To back up MongoDB
+
+Run this on the deployment host. For external MongoDB, use your database provider's backup tools.
+
+```sh
+umask 077
+backup_dir=$(mktemp -d "$HOME/zetafly-backup.XXXXXXXX") &&
+  cd /var/www/zetafly/current &&
+  docker compose -p zetafly --env-file .env --env-file image.env \
+    -f compose.yaml -f compose.production.yaml \
+    exec -T mongo mongodump --archive --gzip > "$backup_dir/mongodb.archive.gz"
+```
+
+### To back up `.env`
+
+In the same shell, copy the production settings into the private backup directory.
+
+```sh
+install -m 600 /var/www/zetafly/shared/.env "${backup_dir:?Run the MongoDB backup steps first}/.env"
+```
+
+### To roll back to a previous release
+
+Replace `PREVIOUS_RELEASE_SHA` with the directory name under `releases`. The rollback uses that release's pinned image and the current shared settings and database.
+
+```sh
+release=/var/www/zetafly/releases/PREVIOUS_RELEASE_SHA
+cd "$release" &&
+  docker compose -p zetafly --env-file .env --env-file image.env \
+    -f compose.yaml -f compose.production.yaml \
+    up -d --no-build --wait --wait-timeout 180 &&
+  curl --fail --silent --show-error http://127.0.0.1:3000/api/health &&
+  ln -sfn "$release" /var/www/zetafly/current
+```
 
 ## Training
 
