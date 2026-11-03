@@ -17,7 +17,7 @@ A fruit fly playing Zetamac, built on the MERN stack.
 ## Requirements
 
 - Node.js 24.12–24.x
-- Docker with Compose 2.24.4+
+- Docker and Docker Compose 2.24.4+
 - Git
 - macOS, Linux, or WSL
 - 4 GB available RAM
@@ -62,7 +62,7 @@ See [Contributing](CONTRIBUTING.md) for contribution guidelines.
 
 Merges to `main` deploy through GitHub Actions.
 
-1. Install Docker Engine, Compose, Apache, and Certbot. Enable Apache's `ssl`, `proxy`, `proxy_http`, and `headers` modules.
+1. Install Docker Engine, Docker Compose, Apache, and Certbot. Enable Apache's `ssl`, `proxy`, `proxy_http`, and `headers` modules.
 2. Create a `deploy` account with Docker access and ownership of `/var/www/zetafly/releases` and `/var/www/zetafly/shared`. Save the production `.env` as `shared/.env`.
 3. Point the domain at the server, issue its TLS certificate, and install [the Apache site](deploy/apache/zetafly.conf). For another domain, update the Apache hostname, certificate paths, and deployment workflow URLs. Run `apache2ctl configtest` before reloading Apache.
 4. Add `DEPLOY_SSH_KEY` to the GitHub `production` environment's secrets. Set its `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` variables to the server address and pinned SSH host key.
@@ -72,7 +72,7 @@ Merges to `main` deploy through GitHub Actions.
 
 ### Backup
 
-To back up the Compose-managed MongoDB database and production `.env`:
+To back up the MongoDB database and production `.env`:
 
 ```sh
 umask 077
