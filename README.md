@@ -50,13 +50,13 @@ Edit `.env` for production:
 
 ## Development
 
-See [Contributing](CONTRIBUTING.md) for branch conventions and additional checks.
-
 ```sh
 npm run dev --workspace web
 docker compose up --build -d app
 npm run check
 ```
+
+See [Contributing](CONTRIBUTING.md) for contribution guidelines.
 
 ## Deployment
 
@@ -70,9 +70,9 @@ Merges to `main` deploy through GitHub Actions.
 - **Releases:** `/var/www/zetafly/releases`
 - **Active release:** `/var/www/zetafly/current`
 
-### To back up MongoDB
+### Backup
 
-Run this on the deployment host. For external MongoDB, use your database provider's backup tools.
+To back up the Compose-managed MongoDB database and production `.env`:
 
 ```sh
 umask 077
@@ -80,20 +80,13 @@ backup_dir=$(mktemp -d "$HOME/zetafly-backup.XXXXXXXX") &&
   cd /var/www/zetafly/current &&
   docker compose -p zetafly --env-file .env --env-file image.env \
     -f compose.yaml -f compose.production.yaml \
-    exec -T mongo mongodump --archive --gzip > "$backup_dir/mongodb.archive.gz"
+    exec -T mongo mongodump --archive --gzip > "$backup_dir/mongodb.archive.gz" &&
+  install -m 600 /var/www/zetafly/shared/.env "$backup_dir/.env"
 ```
 
-### To back up `.env`
+### Recovery
 
-In the same shell, copy the production settings into the private backup directory.
-
-```sh
-install -m 600 /var/www/zetafly/shared/.env "${backup_dir:?Run the MongoDB backup steps first}/.env"
-```
-
-### To roll back to a previous release
-
-Replace `PREVIOUS_RELEASE_SHA` with the directory name under `releases`. The rollback uses that release's pinned image and the current shared settings and database.
+To roll back, replace `PREVIOUS_RELEASE_SHA` with the previous release directory name:
 
 ```sh
 release=/var/www/zetafly/releases/PREVIOUS_RELEASE_SHA
