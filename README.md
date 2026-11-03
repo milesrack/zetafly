@@ -17,7 +17,7 @@ A fruit fly playing Zetamac, built on the MERN stack.
 ## Requirements
 
 - Node.js 24.12–24.x
-- Docker with Compose 2.24.4+
+- Docker with Docker Compose 2.24.4+
 - Git
 - macOS, Linux, or WSL
 - 4 GB available RAM
@@ -32,13 +32,8 @@ npm run setup
 docker compose up --build -d
 ```
 
-- App: [localhost:3000](http://localhost:3000)
-- Email: [localhost:8025](http://localhost:8025)
-
-Manage your password and account under **Settings → Account**. Changing your
-password logs out your other sessions. Deleting your account requires your current
-password and confirmation; it permanently removes your saved runs, preferences and
-uploaded weights, stops your active run and revokes all your sessions.
+- **App:** [localhost:3000](http://localhost:3000)
+- **Email:** [localhost:8025](http://localhost:8025)
 
 ## Configuration
 
@@ -53,8 +48,6 @@ Edit `.env` for production:
 | `RESEND_API_KEY`     | Empty locally, your Resend API key in production                 |
 | `EMAIL_FROM`         | Local default, or a sender on your verified domain               |
 
-[Verify your sender domain in Resend](https://resend.com/docs/dashboard/domains/introduction).
-
 ## Development
 
 ```sh
@@ -63,21 +56,90 @@ docker compose up --build -d app
 npm run check
 ```
 
-[Contributing](CONTRIBUTING.md)
+See [Contributing](CONTRIBUTING.md) for contribution guidelines.
 
 ## Deployment
 
 Merges to `main` deploy through GitHub Actions.
 
-1. Install Docker Engine, Compose, Apache, and Certbot. Enable Apache's `ssl`, `proxy`, `proxy_http`, and `headers` modules.
-2. Create a `deploy` account with Docker access and ownership of `/var/www/zetafly/releases` and `/var/www/zetafly/shared`. Save the production `.env` as `shared/.env`.
-3. Point the domain at the server, issue its TLS certificate, and install [the Apache site](deploy/apache/zetafly.conf). For another domain, update the Apache hostname, certificate paths, and deployment workflow URLs. Run `apache2ctl configtest` before reloading Apache.
-4. Add `DEPLOY_SSH_KEY` to the GitHub `production` environment's secrets. Set its `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` variables to the server address and pinned SSH host key.
+### Setup
 
-- Releases: `/var/www/zetafly/releases`
-- Active: `/var/www/zetafly/current`
+On a Debian or Ubuntu host with Docker Engine and Docker Compose installed, install the remaining packages:
 
-Back up the MongoDB volume and `shared/.env`. Roll back by running Compose from the previous release and repointing `current`.
+```sh
+sudo apt-get update
+sudo apt-get install apache2 certbot rsync
+sudo a2enmod ssl proxy proxy_http headers
+```
+
+Create the deployment account and install the production `.env`:
+
+```sh
+sudo adduser --disabled-password --gecos "" deploy
+sudo usermod -aG docker deploy
+sudo install -d -o deploy -g deploy /var/www/zetafly/releases /var/www/zetafly/shared
+sudo install -m 600 -o deploy -g deploy .env /var/www/zetafly/shared/.env
+```
+
+Point the DNS names at the host, then issue the certificates:
+
+```sh
+sudo install -d /var/www/letsencrypt
+echo 'Alias /.well-known/acme-challenge/ /var/www/letsencrypt/.well-known/acme-challenge/' |
+  sudo tee /etc/apache2/conf-available/zetafly-acme.conf >/dev/null
+sudo a2enconf zetafly-acme
+sudo apache2ctl configtest && sudo systemctl reload apache2
+sudo certbot certonly --webroot -w /var/www/letsencrypt -d poosd.dev -d www.poosd.dev
+sudo certbot certonly --webroot -w /var/www/letsencrypt -d zetafly.poosd.dev
+```
+
+From the repository root, enable the Apache site:
+
+```sh
+sudo install -m 644 deploy/apache/zetafly.conf /etc/apache2/sites-available/zetafly.conf
+sudo a2ensite zetafly
+sudo a2disconf zetafly-acme
+sudo apache2ctl configtest && sudo systemctl reload apache2
+```
+
+For another domain, update the Apache hostnames, certificate paths, and deployment workflow URLs.
+
+Add the deployment public key to `~deploy/.ssh/authorized_keys`. In GitHub's `production` environment, set:
+
+- **`DEPLOY_SSH_KEY`:** Deployment private key (secret).
+- **`DEPLOY_HOST`:** Server hostname (variable).
+- **`DEPLOY_KNOWN_HOSTS`:** Verified SSH host key entry (variable).
+
+- **Releases:** `/var/www/zetafly/releases`
+- **Active release:** `/var/www/zetafly/current`
+
+### Backup
+
+To back up the MongoDB database and production `.env`:
+
+```sh
+umask 077
+backup_dir=$(mktemp -d "$HOME/zetafly-backup.XXXXXXXX") &&
+  cd /var/www/zetafly/current &&
+  docker compose -p zetafly --env-file .env --env-file image.env \
+    -f compose.yaml -f compose.production.yaml \
+    exec -T mongo mongodump --archive --gzip > "$backup_dir/mongodb.archive.gz" &&
+  install -m 600 /var/www/zetafly/shared/.env "$backup_dir/.env"
+```
+
+### Recovery
+
+To roll back, replace `PREVIOUS_RELEASE_SHA` with the previous release directory name:
+
+```sh
+release=/var/www/zetafly/releases/PREVIOUS_RELEASE_SHA
+cd "$release" &&
+  docker compose -p zetafly --env-file .env --env-file image.env \
+    -f compose.yaml -f compose.production.yaml \
+    up -d --no-build --wait --wait-timeout 180 &&
+  curl --fail --silent --show-error http://127.0.0.1:3000/api/health &&
+  ln -sfn "$release" /var/www/zetafly/current
+```
 
 ## Training
 
