@@ -156,3 +156,41 @@ test("run feedback clears after acceptance, including identical next operands, a
   assert.deepEqual(requests, [[], ["5"], [], []]);
   assert.equal(session.state.accepted, 1);
 });
+
+test("a shutdown failure still clears capture, saves the run, and sends its final state", async () => {
+  const packets: SessionPacket[] = [];
+  const runs: unknown[] = [];
+  const session = new Session(
+    {
+      collection: () => ({
+        insertOne: async (run: unknown) => runs.push(run),
+      }),
+    } as unknown as Db,
+    (packet) => packets.push(packet),
+    "alice",
+  );
+
+  session.computer.page = {} as NonNullable<Session["computer"]["page"]>;
+  session.computer.screenshot = async () => "fixture";
+  session.computer.startGame = async () => {};
+  session.computer.problem = async () => {
+    throw new Error("Problem unavailable");
+  };
+  session.worker.close = async () => {
+    throw new Error("Worker unavailable");
+  };
+
+  session.start(DEFAULTS);
+  await session.task;
+
+  assert.equal(session.captureTimer, undefined);
+  assert.equal(session.running, false);
+  assert.ok(session.state.endedAt);
+  assert.equal(session.state.status, "failed");
+  assert.equal(session.state.error, "Problem unavailable");
+  assert.equal(runs.length, 1);
+  const final = packets.at(-1);
+  assert.ok(final?.kind === "state");
+  assert.equal(final.status, "failed");
+  assert.equal(final.endedAt, session.state.endedAt);
+});
