@@ -2,6 +2,7 @@ import type { IncomingHttpHeaders, Server } from "node:http";
 import { WebSocket, WebSocketServer } from "ws";
 import type { SessionPacket } from "../shared/contracts.ts";
 import type { accessVerifier } from "./access.ts";
+import { OwnerOperations } from "./owner-operations.ts";
 import type { SessionManager } from "./session-manager.ts";
 
 declare module "ws" {
@@ -17,10 +18,16 @@ export class LiveConnections {
   private recheck?: ReturnType<typeof setInterval>;
   private identify: ReturnType<typeof accessVerifier>;
   private origins: Set<string>;
+  private operations: OwnerOperations;
 
-  constructor(identify: ReturnType<typeof accessVerifier>, origins: string[]) {
+  constructor(
+    identify: ReturnType<typeof accessVerifier>,
+    origins: string[],
+    operations = new OwnerOperations(),
+  ) {
     this.identify = identify;
     this.origins = new Set(origins);
+    this.operations = operations;
   }
 
   broadcast(ownerId: string, packet: SessionPacket) {
@@ -40,6 +47,14 @@ export class LiveConnections {
   disconnectSession(id: string) {
     for (const socket of this.sockets.clients) {
       if (socket.sessionId === id) {
+        socket.close(1000);
+      }
+    }
+  }
+
+  disconnectOwner(ownerId: string) {
+    for (const socket of this.sockets.clients) {
+      if (socket.userId === ownerId) {
         socket.close(1000);
       }
     }
@@ -65,30 +80,40 @@ export class LiveConnections {
           return;
         }
 
-        this.sockets.handleUpgrade(req, socket, head, (ws) => {
-          ws.userId = identity.user.id;
-          ws.sessionId = identity.session.id;
-          ws.authHeaders = req.headers;
+        await this.operations.run(identity.user.id, async () => {
+          const currentIdentity = await this.identify(req);
 
-          ws.send(
-            JSON.stringify({
-              kind: "state",
-              ...sessions.state(ws.userId),
-              serverTime: Date.now(),
-            }),
-          );
+          if (!currentIdentity) {
+            socket.destroy();
 
-          const current = sessions.current;
+            return;
+          }
 
-          if (current?.ownerId === ws.userId && current.session.screen) {
+          this.sockets.handleUpgrade(req, socket, head, (ws) => {
+            ws.userId = currentIdentity.user.id;
+            ws.sessionId = currentIdentity.session.id;
+            ws.authHeaders = req.headers;
+
             ws.send(
               JSON.stringify({
-                kind: "screen",
-                png: current.session.screen,
-                runId: current.session.state.runId,
+                kind: "state",
+                ...sessions.state(ws.userId),
+                serverTime: Date.now(),
               }),
             );
-          }
+
+            const current = sessions.current;
+
+            if (current?.ownerId === ws.userId && current.session.screen) {
+              ws.send(
+                JSON.stringify({
+                  kind: "screen",
+                  png: current.session.screen,
+                  runId: current.session.state.runId,
+                }),
+              );
+            }
+          });
         });
       } catch {
         socket.destroy();

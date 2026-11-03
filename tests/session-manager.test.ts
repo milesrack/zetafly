@@ -3,6 +3,35 @@ import test from "node:test";
 import type { Session } from "../server/session.ts";
 import { SessionManager } from "../server/session-manager.ts";
 
+test("removing an account awaits its final run write and releases only its computer", async () => {
+  const sessions = new SessionManager(
+    {} as ConstructorParameters<typeof SessionManager>[0],
+    () => {},
+    {} as ConstructorParameters<typeof SessionManager>[2],
+  );
+  const closing = Promise.withResolvers<void>();
+  let cleaned = false;
+  sessions.current = {
+    ownerId: "alice",
+    session: { close: () => closing.promise } as unknown as Session,
+    profileId: null,
+    cleanup: async () => {
+      cleaned = true;
+    },
+  };
+  await sessions.remove("bob");
+  assert.equal(sessions.current.ownerId, "alice");
+  const removal = sessions.remove("alice");
+  assert.equal(sessions.claiming, true);
+  await assert.rejects(sessions.claim("bob"));
+  assert.equal(cleaned, false);
+  closing.resolve();
+  await removal;
+  assert.equal(cleaned, true);
+  assert.equal(sessions.current, null);
+  assert.equal(sessions.claiming, false);
+});
+
 test("another user cannot replace an active or preparing brain session", async () => {
   const sessions = new SessionManager(
     {} as unknown as ConstructorParameters<typeof SessionManager>[0],
