@@ -26,7 +26,8 @@
     "api:sync": "node scripts/sync-swaggerhub.ts",
     "model:predict": "node scripts/predict-model.ts",
     "model:anatomy": "node scripts/prepare-anatomy.ts",
-    "test:integration": "node scripts/verify-accounts.ts && node scripts/verify-weight-search.ts && npm run test:security",
+    "test:integration": "node scripts/verify-accounts.ts && node scripts/verify-weight-search.ts && npm run test:deletion && npm run test:security",
+    "test:deletion": "docker compose exec -T -w /app/server -e RESEND_API_KEY= app node --input-type=module-typescript < scripts/verify-account-deletion.ts",
     "test:security": "docker compose exec -T -w /app/server -e RESEND_API_KEY= app node --input-type=module-typescript < scripts/verify-auth-security.ts",
     "test:simulator": "node scripts/verify-simulator.ts",
     "test:e2e": "node scripts/verify-sound.ts && node scripts/verify-auth-ui.ts && node scripts/verify-playback.ts"

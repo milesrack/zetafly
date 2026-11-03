@@ -1,14 +1,21 @@
 import { Router } from "express";
+import type { OwnerMutation } from "../owner-operations.ts";
 import type { Preferences } from "../preferences.ts";
 
-export function preferencesRoutes(preferences: Preferences) {
+export function preferencesRoutes(
+  preferences: Preferences,
+  mutate: OwnerMutation,
+) {
   const router = Router();
 
   router.get("/api/preferences", async (req, res) =>
     res.json(await preferences.get(req.userId)),
   );
-  router.put("/api/preferences", async (req, res) =>
-    res.json(await preferences.save(req.userId, req.body)),
+  router.put(
+    "/api/preferences",
+    mutate(async (req, res) =>
+      res.json(await preferences.save(req.userId, req.body)),
+    ),
   );
 
   return router;
