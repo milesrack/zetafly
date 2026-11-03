@@ -7,7 +7,7 @@ import { loadAnatomy } from "../server/brain/anatomy.ts";
 import { loadGraph, sha256 } from "../server/brain/graph.ts";
 import { randomSource } from "../server/brain/random.ts";
 import type { SequenceExample } from "../server/brain/sequence.ts";
-import { SequenceBrain } from "../server/brain/sequence.ts";
+import { SequenceTrainer } from "../server/brain/sequence-training.ts";
 import { cacheSequenceFeatures } from "./feature-cache.ts";
 import { cachedLoss, trainReadout } from "./readout-training.ts";
 import {
@@ -168,6 +168,7 @@ const sources = Object.fromEntries(
   await Promise.all(
     [
       "server/brain/sequence.ts",
+      "server/brain/sequence-training.ts",
       "server/brain/readout.ts",
       "server/brain/random.ts",
       "scripts/readout-training.ts",
@@ -196,7 +197,7 @@ const data = values["memorize-defaults"]
         : undefined,
     )
   : sequenceSplit(values.curriculum, values["full-data"]);
-const model = new SequenceBrain(graph, {
+const model = new SequenceTrainer(graph, {
   ...protocol.brain,
   encoding: values.encoding as "symbols" | "place",
   seed,
@@ -215,7 +216,7 @@ const model = new SequenceBrain(graph, {
 });
 let preserveReadout = false;
 if (initialBytes) {
-  const initial = SequenceBrain.restore(graph, initialBytes, {
+  const initial = SequenceTrainer.restore(graph, initialBytes, {
     inference: true,
   });
 
@@ -354,8 +355,8 @@ console.log(
   }),
 );
 
-const plastic = SequenceBrain.restore(graph, selected);
-const frozen = SequenceBrain.restore(graph, selected);
+const plastic = SequenceTrainer.restore(graph, selected);
+const frozen = SequenceTrainer.restore(graph, selected);
 const curve = [{ update: 0, loss: best }];
 const frozenCurve = [{ update: 0, loss: best }];
 let plasticBest = best;
@@ -438,10 +439,10 @@ await writeFile(frozenPath, frozenCheckpoint, {
   flag: "wx",
 });
 
-const selectedPlastic = SequenceBrain.restore(graph, plasticCheckpoint);
-const selectedFrozen = SequenceBrain.restore(graph, frozenCheckpoint);
+const selectedPlastic = SequenceTrainer.restore(graph, plasticCheckpoint);
+const selectedFrozen = SequenceTrainer.restore(graph, frozenCheckpoint);
 const evaluate = (
-  brain: SequenceBrain,
+  brain: SequenceTrainer,
   rows: typeof data.test,
   name: string,
 ) => {
@@ -478,7 +479,7 @@ const results = {
   initial: initialBytes
     ? {
         test: evaluate(
-          SequenceBrain.restore(graph, initialBytes, { inference: true }),
+          SequenceTrainer.restore(graph, initialBytes, { inference: true }),
           data.test,
           "initial-test",
         ),

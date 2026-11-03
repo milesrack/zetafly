@@ -6,10 +6,10 @@ import test from "node:test";
 import { cacheSequenceFeatures } from "../scripts/feature-cache.ts";
 import { trainReadout } from "../scripts/readout-training.ts";
 import { loadGraph } from "../server/brain/graph.ts";
-import { SequenceBrain } from "../server/brain/sequence.ts";
+import { SequenceTrainer } from "../server/brain/sequence-training.ts";
 
 test("feature caching preserves exact values across workers, restart, and recalibration", async () => {
-  const model = SequenceBrain.restore(
+  const model = SequenceTrainer.restore(
     await loadGraph(),
     await readFile("models/default/weights.npz"),
     { inference: true },

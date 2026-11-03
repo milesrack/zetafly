@@ -1,4 +1,5 @@
 import type { KeyExample, SequenceBrain } from "../server/brain/sequence.ts";
+import type { SequenceTrainer } from "../server/brain/sequence-training.ts";
 
 interface Warmup {
   updates: number;
@@ -36,7 +37,7 @@ export function cachedLoss(
 }
 
 export function trainReadout(
-  model: SequenceBrain,
+  model: SequenceTrainer,
   training: KeyExample[][],
   validation: KeyExample[][],
   protocol: Warmup,

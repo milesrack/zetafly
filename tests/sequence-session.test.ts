@@ -4,13 +4,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { loadGraph } from "../server/brain/graph.ts";
-import { SequenceBrain } from "../server/brain/sequence.ts";
+import { SequenceTrainer } from "../server/brain/sequence-training.ts";
 import { inspectWeights } from "../server/brain/weights.ts";
 import { NeuralWorker } from "../server/neural-worker.ts";
 
 test("sequence NPZ weights preserve predictions through upload inspection and worker inference", async () => {
   const graph = await loadGraph();
-  const model = new SequenceBrain(graph, {
+  const model = new SequenceTrainer(graph, {
     seed: 7,
     steps: 1,
     settle: 0,
