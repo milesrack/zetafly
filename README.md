@@ -104,14 +104,16 @@ sudo apache2ctl configtest && sudo systemctl reload apache2
 
 For another domain, update the Apache hostnames, certificate paths, and deployment workflow URLs.
 
-Add the deployment public key to `~deploy/.ssh/authorized_keys`. In GitHub's `production` environment, set:
+Add the deployment public key to `~deploy/.ssh/authorized_keys`, then in GitHub's `production` environment, set:
 
 - **`DEPLOY_SSH_KEY`:** Deployment private key (secret).
 - **`DEPLOY_HOST`:** Server hostname (variable).
 - **`DEPLOY_KNOWN_HOSTS`:** Verified SSH host key entry (variable).
 
+On the host, release directories and the current deployment are located at:
+
 - **Releases:** `/var/www/zetafly/releases`
-- **Active release:** `/var/www/zetafly/current`
+- **Current release:** `/var/www/zetafly/current` (symlink to the active release).
 
 ### Backup
 
