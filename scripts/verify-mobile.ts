@@ -156,6 +156,20 @@ for (const engine of [chromium, webkit]) {
         page.locator("header button, .view-controls button, .sound-button"),
       );
       await fits(page);
+      assert.ok(
+        await page
+          .locator(".view-controls")
+          .evaluate((element) => element.scrollWidth <= element.clientWidth),
+        "The view tabs must fit without squeezing their padding",
+      );
+      for (const tab of await page.getByRole("tab").all()) {
+        assert.equal(
+          await tab.evaluate(
+            (element) => getComputedStyle(element).paddingLeft,
+          ),
+          "12px",
+        );
+      }
 
       for (const name of ["Keyboard", "Screen", "Brain", "Desk"]) {
         const tab = page.getByRole("tab", { name, exact: true });
