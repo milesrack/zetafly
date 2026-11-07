@@ -1229,3 +1229,14 @@ select {
     left: max(16px, env(safe-area-inset-left));
   }
 }
+
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  /* iPhone browsers zoom focused form fields when their text is below 16px. */
+  .account-content input,
+  .range-row input,
+  .weight-menu [cmdk-input],
+  input[type="number"],
+  select {
+    font-size: 16px;
+  }
+}

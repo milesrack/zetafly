@@ -485,7 +485,11 @@ for (const engine of [chromium, webkit]) {
     assert.equal(await deleting.count(), 0);
     await page.close();
 
-    const guestContext = await browser.newContext();
+    const guestContext = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    });
     guestContext.setDefaultTimeout(30000);
     const guest = await guestContext.newPage();
     guest.on("pageerror", (error) => errors.push(error.message));
@@ -498,6 +502,29 @@ for (const engine of [chromium, webkit]) {
     const close = guest.getByRole("button", { name: "Close account" });
     const dialog = guest.locator("dialog[open]");
     await login.click();
+
+    const email = guest.getByLabel("Email", { exact: true });
+    assert.equal(
+      await email.evaluate((input) => input === document.activeElement),
+      true,
+    );
+
+    for (const input of await dialog.locator("input").all()) {
+      assert.ok(
+        await input.evaluate(
+          (element) => parseFloat(getComputedStyle(element).fontSize) >= 16,
+        ),
+        "Mobile auth fields must avoid iPhone focus zoom",
+      );
+    }
+
+    assert.equal(
+      await guest.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+      "Mobile login must fit the viewport",
+    );
     await accessibility(guest);
     await guest.getByLabel("Email", { exact: true }).fill(user.email);
 
