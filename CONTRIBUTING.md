@@ -29,6 +29,8 @@ npm run test:e2e
 
 For model upload or runtime changes, run `node scripts/verify-brain-upload.ts --model models/default/weights.npz` against the local Docker app and test inbox.
 
+`test:e2e` includes mobile layout and touch-target checks at phone widths and in landscape. To save mobile screenshots, set `MOBILE_SCREENSHOTS` to a directory outside the repository.
+
 For simulator changes, run `npm run model:fetch && npm run test:simulator`.
 
 ## Code organisation
