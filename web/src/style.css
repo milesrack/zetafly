@@ -1240,3 +1240,39 @@ select {
     font-size: 16px;
   }
 }
+
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .account-dialog .drawer-heading h2 {
+    font-size: 20px;
+  }
+  .account-dialog .drawer-heading .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+  .account-content label,
+  .account-content p,
+  .account-content .auth-footer,
+  .account-content .form-error,
+  .account-content .email-confirmation,
+  .account-dialog .password-feedback,
+  .account-dialog .auth-recovery,
+  .account-dialog .password-reveal,
+  .account-dialog .auth-switch {
+    font-size: 14px;
+  }
+  .account-dialog .form-submit {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .account-dialog .auth-recovery,
+  .account-dialog .auth-switch,
+  .account-dialog .auth-footer button,
+  .account-dialog .password-reveal {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .account-content .password-input input {
+    min-height: 44px;
+    padding-right: 64px;
+  }
+}

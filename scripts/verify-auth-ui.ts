@@ -525,6 +525,14 @@ for (const engine of [chromium, webkit]) {
       true,
       "Mobile login must fit the viewport",
     );
+    for (const button of await dialog.locator("button").all()) {
+      const bounds = await button.boundingBox();
+      assert.ok(
+        bounds && bounds.width >= 44 && bounds.height >= 44,
+        "Mobile account actions must provide 44px touch targets",
+      );
+    }
+
     await accessibility(guest);
     await guest.getByLabel("Email", { exact: true }).fill(user.email);
 
