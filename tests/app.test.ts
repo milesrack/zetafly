@@ -5,16 +5,43 @@ import { type AppDependencies, createApp } from "../server/app.ts";
 import { readConfig } from "../server/config.ts";
 
 async function fixture(t: TestContext, authenticated = true) {
+  const database = {
+    findQuery: undefined as unknown,
+    countQuery: undefined as unknown,
+    skip: -1,
+    limit: -1,
+  };
+
   const dependencies = {
     config: readConfig({}),
     db: {
       command: async () => ({ ok: 1 }),
       collection: () => ({
         findOne: async () => null,
+        countDocuments: async (query: unknown) => {
+          database.countQuery = query;
+          return 0;
+        },
+
         find: (query: unknown) => {
-          assert.deepEqual(query, { ownerId: "alice" });
+          database.findQuery = query;
+
           return {
-            sort: () => ({ limit: () => ({ toArray: async () => [] }) }),
+            sort: () => ({
+              skip: (offset: number) => {
+                database.skip = offset;
+
+                return {
+                  limit: (limit: number) => {
+                    database.limit = limit;
+
+                    return {
+                      toArray: async () => [],
+                    };
+                  },
+                };
+              },
+            }),
           };
         },
       }),
@@ -46,7 +73,7 @@ async function fixture(t: TestContext, authenticated = true) {
   const request = (path: string, init?: RequestInit) =>
     fetch(`http://127.0.0.1:${address.port}${path}`, init);
 
-  return { request, dependencies };
+  return { request, dependencies, database };
 }
 
 test("public health works without credentials while private routes reject anonymous requests", async (t) => {
@@ -78,6 +105,52 @@ test("feature routes retain origin rejection, owner filtering and JSON errors", 
   const missing = await request("/api/unknown");
   assert.equal(missing.status, 404);
   assert.deepEqual(await missing.json(), { error: "Unknown endpoint" });
+});
+
+test("run history supports owner-scoped search and pagination", async (t) => {
+  const { request, database } = await fixture(t);
+
+  const response = await request("/api/runs?q=completed&page=3&limit=5");
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), []);
+
+  const pattern = RegExp.escape("completed");
+
+  assert.deepEqual(database.findQuery, {
+    ownerId: "alice",
+    $or: [
+      { id: { $regex: pattern, $options: "i" } },
+      { "profile.name": { $regex: pattern, $options: "i" } },
+      { status: { $regex: pattern, $options: "i" } },
+    ],
+  });
+
+  assert.deepEqual(database.countQuery, database.findQuery);
+  assert.equal(database.skip, 10);
+  assert.equal(database.limit, 5);
+
+  assert.equal(response.headers.get("x-page"), "3");
+  assert.equal(response.headers.get("x-page-size"), "5");
+  assert.equal(response.headers.get("x-total-count"), "0");
+});
+
+test("run history rejects invalid search and pagination", async (t) => {
+  const { request } = await fixture(t);
+
+  const badPage = await request("/api/runs?page=0");
+  assert.equal(badPage.status, 400);
+  assert.deepEqual(await badPage.json(), { error: "Invalid pagination" });
+
+  const badLimit = await request("/api/runs?limit=51");
+  assert.equal(badLimit.status, 400);
+  assert.deepEqual(await badLimit.json(), { error: "Invalid pagination" });
+
+  const longSearch = await request(`/api/runs?q=${"a".repeat(101)}`);
+  assert.equal(longSearch.status, 400);
+  assert.deepEqual(await longSearch.json(), {
+    error: "Search must be text up to 100 characters",
+  });
 });
 
 test("weight deletion refuses an active owner's session before touching storage", async (t) => {

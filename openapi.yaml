@@ -313,10 +313,30 @@ paths:
   /api/runs:
     get:
       operationId: listRuns
-      summary: List the latest 20 runs
+      summary: Search saved runs
       security:
         - bearerAuth: []
         - accessCookie: []
+      parameters:
+        - name: q
+          in: query
+          description: Case-insensitive partial search by run ID, profile name, or status.
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
       responses:
         "200":
           description: Success
@@ -326,6 +346,18 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RunSummary"
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+            X-Page:
+              schema:
+                type: integer
+            X-Page-Size:
+              schema:
+                type: integer
+        "400":
+          $ref: "#/components/responses/Error400"
         "401":
           $ref: "#/components/responses/Error401"
         "403":
