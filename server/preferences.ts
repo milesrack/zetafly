@@ -39,7 +39,7 @@ export class Preferences {
       const profile = await this.weights.collection.findOne({
         ownerId,
         id: settings.profileId,
-        checkpointFormat: "sequence-npz-v1",
+        checkpointFormat: "brain-npz-v1",
       });
 
       if (!profile) {

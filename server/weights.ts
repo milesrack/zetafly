@@ -29,7 +29,7 @@ export type StoredProfile = Profile & {
   bytes: number;
   createdAt: Date;
   extension?: ".npz" | ".zip";
-  checkpointFormat?: "sequence-npz-v1";
+  checkpointFormat?: "brain-npz-v1";
 };
 
 function stored(profile: Profile | StoredProfile): StoredProfile {
@@ -74,7 +74,7 @@ export class Weights {
       .find(
         {
           ownerId,
-          checkpointFormat: "sequence-npz-v1",
+          checkpointFormat: "brain-npz-v1",
           ...(text ? { name: { $regex: pattern, $options: "i" } } : {}),
         },
         {
@@ -84,6 +84,7 @@ export class Weights {
             ownerId: 0,
             extension: 0,
             checkpointFormat: 0,
+            arithmeticMode: 0,
           },
         },
       )
@@ -114,7 +115,7 @@ export class Weights {
       if (
         (await this.collection.countDocuments({
           ownerId,
-          checkpointFormat: "sequence-npz-v1",
+          checkpointFormat: "brain-npz-v1",
         })) >= 5
       ) {
         throw Object.assign(
@@ -203,7 +204,7 @@ export class Weights {
         createdAt: new Date(),
         fileId: storedId,
         extension: ".npz" as const,
-        checkpointFormat: "sequence-npz-v1" as const,
+        checkpointFormat: "brain-npz-v1" as const,
       };
 
       await this.collection.insertOne(profile);
@@ -260,10 +261,10 @@ export class Weights {
       return { profile, path: null, cleanup: async () => {} };
     }
 
-    if (stored(profile).checkpointFormat !== "sequence-npz-v1") {
+    if (stored(profile).checkpointFormat !== "brain-npz-v1") {
       throw Object.assign(
         new Error(
-          "Upload an NPZ checkpoint trained for the supported sequence brain before running it",
+          "Upload an NPZ checkpoint trained for the supported brain before running it",
         ),
         { status: 400 },
       );

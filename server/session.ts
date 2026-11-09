@@ -62,7 +62,6 @@ export class Session {
       sha256: profile.sha256 ?? null,
       synaptic: profile.synaptic,
       features: profile.features,
-      arithmeticMode: profile.arithmeticMode ?? "sequence",
     };
   }
 

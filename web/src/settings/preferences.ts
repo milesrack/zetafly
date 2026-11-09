@@ -3,16 +3,14 @@ import type { Profile as WeightProfile } from "../../../shared/contracts.ts";
 import { DEFAULT_SETTINGS } from "../../../shared/settings.ts";
 import { apiFetch, request } from "../api";
 
-export type Profile = Pick<WeightProfile, "id" | "name" | "arithmeticMode">;
+export type Profile = Pick<WeightProfile, "id" | "name">;
 
 export type ProfileSearch = (
   query: string,
   signal: AbortSignal,
 ) => Promise<Profile[]>;
 
-const defaults: Profile[] = [
-  { id: "published", name: "Default", arithmeticMode: "sequence" },
-];
+const defaults: Profile[] = [{ id: "published", name: "Default" }];
 
 export function usePreferences(userId?: string) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);

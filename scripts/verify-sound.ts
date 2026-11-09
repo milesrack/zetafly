@@ -120,7 +120,6 @@ for (const engine of [chromium, webkit]) {
                     {
                       id: "published",
                       name: "Default",
-                      arithmeticMode: "sequence",
                     },
                   ]
                 : {},

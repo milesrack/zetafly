@@ -49,7 +49,7 @@ function fixture(settings: Record<string, unknown>, profileExists = true) {
         assert.deepEqual(query, {
           ownerId: "alice",
           id: profileId,
-          checkpointFormat: "sequence-npz-v1",
+          checkpointFormat: "brain-npz-v1",
         });
         return profileExists ? { id: profileId } : null;
       },

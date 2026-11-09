@@ -10,25 +10,25 @@ const rows = [
     id: "one",
     ownerId: "alice",
     name: "Training v2",
-    checkpointFormat: "sequence-npz-v1",
+    checkpointFormat: "brain-npz-v1",
   },
   {
     id: "two",
     ownerId: "alice",
     name: "Retrained addition",
-    checkpointFormat: "sequence-npz-v1",
+    checkpointFormat: "brain-npz-v1",
   },
   {
     id: "three",
     ownerId: "alice",
     name: "Draft [v2].*",
-    checkpointFormat: "sequence-npz-v1",
+    checkpointFormat: "brain-npz-v1",
   },
   {
     id: "secret",
     ownerId: "bob",
     name: "Training private",
-    checkpointFormat: "sequence-npz-v1",
+    checkpointFormat: "brain-npz-v1",
   },
   {
     id: "legacy",
@@ -48,7 +48,7 @@ function fixture() {
       name?: { $regex: string; $options: string };
     }) {
       assert.equal(query.ownerId, "alice");
-      assert.equal(query.checkpointFormat, "sequence-npz-v1");
+      assert.equal(query.checkpointFormat, "brain-npz-v1");
 
       const pattern = query.name
         ? new RegExp(query.name.$regex, query.name.$options)
@@ -117,8 +117,8 @@ test("archived uploads remain retrievable but cannot be materialised", async () 
     id: "legacy",
     ownerId: "alice",
     fileId: "archived",
-    extension: ".zip",
-    bundleVersion: 2,
+    extension: ".npz",
+    checkpointFormat: "sequence-npz-v1",
   };
 
   weights.collection = {
@@ -130,7 +130,7 @@ test("archived uploads remain retrievable but cannot be materialised", async () 
 
   await assert.rejects(
     weights.materialise("alice", "legacy"),
-    /supported sequence brain/,
+    /supported brain/,
   );
 
   await assert.rejects(

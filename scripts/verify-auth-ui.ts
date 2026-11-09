@@ -53,7 +53,7 @@ async function mock(
     } else if (path === "/api/preferences") {
       json = DEFAULTS;
     } else if (path === "/api/weights") {
-      json = [{ id: "published", name: "Default", arithmeticMode: "sequence" }];
+      json = [{ id: "published", name: "Default" }];
     } else if (path === "/api/auth/sign-up/email") {
       json = { user: { ...user, emailVerified: false }, token: null };
     } else if (path === "/api/auth/sign-in/email") {

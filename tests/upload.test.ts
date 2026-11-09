@@ -66,17 +66,13 @@ test("uploads accept numeric NPZ checkpoints and reject executable ZIP bundles",
   const checkpoint = request();
   checkpoint.end(bytes);
 
-  const profile = await weights.upload(
-    checkpoint as unknown as Request,
-    "alice",
-  );
+  await weights.upload(checkpoint as unknown as Request, "alice");
 
-  assert.equal(profile.arithmeticMode, "sequence");
   assert.equal(stored.length, 1);
 
   assert.equal(
     (stored[0] as { checkpointFormat: string }).checkpointFormat,
-    "sequence-npz-v1",
+    "brain-npz-v1",
   );
 
   const invalid = request();

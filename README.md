@@ -146,19 +146,15 @@ cd "$release" &&
 ## Training
 
 ```sh
+uv venv --python 3.12 output/venv
+uv pip install --python output/venv/bin/python -r research/connectome-arithmetic/requirements.txt
 npm run model:fetch
-npm run sequence:train -- --seed 42 --output output/my-fly.npz
-npm run model:predict -- --model output/my-fly.npz --expression '17*6'
-npm run model:inspect -- output/my-fly.npz
+output/venv/bin/python research/connectome-arithmetic/train.py --output output/model --seconds 120
+npm run model:predict -- --model output/model/weights.npz --expression '17*6'
+npm run model:inspect -- output/model/weights.npz
 ```
 
-Upload `output/my-fly.npz` in **Settings → Weights**.
-
-To continue training:
-
-```sh
-npm run sequence:train -- --initial output/my-fly.latest.npz --output output/my-fly.npz
-```
+Upload `output/model/weights.npz` in **Settings → Weights**.
 
 ## API
 

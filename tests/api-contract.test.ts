@@ -20,7 +20,6 @@ test("the API contract rejects response drift and fields that could leak private
     id: "model",
     name: "Model",
     features: 512,
-    arithmeticMode: "sequence",
     synaptic: false,
     sha256: "a".repeat(64),
   };
