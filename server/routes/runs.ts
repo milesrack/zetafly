@@ -11,16 +11,77 @@ export function runsRoutes(
 ) {
   const router = Router();
 
-  router.get("/api/runs", async (req, res) =>
-    res.json(
-      await db
-        .collection("runs")
-        .find({ ownerId: req.userId }, { projection: { events: 0 } })
+  router.get("/api/runs", async (req, res) => {
+    const query = req.query.q ?? "";
+    const pageValue = req.query.page ?? "1";
+    const limitValue = req.query.limit ?? "20";
+
+    if (typeof query !== "string" || query.length > 100) {
+      return res
+        .status(400)
+        .json({ error: "Search must be text up to 100 characters" });
+    }
+
+    if (
+      typeof pageValue !== "string" ||
+      typeof limitValue !== "string" ||
+      !/^\d+$/.test(pageValue) ||
+      !/^\d+$/.test(limitValue)
+    ) {
+      return res.status(400).json({ error: "Invalid pagination" });
+    }
+
+    const page = Number(pageValue);
+    const limit = Number(limitValue);
+    const offset = (page - 1) * limit;
+
+    if (
+      !Number.isSafeInteger(page) ||
+      !Number.isSafeInteger(limit) ||
+      !Number.isSafeInteger(offset) ||
+      page < 1 ||
+      limit < 1 ||
+      limit > 50
+    ) {
+      return res.status(400).json({ error: "Invalid pagination" });
+    }
+
+    const text = query.trim();
+    const pattern = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const filter = {
+      ownerId: req.userId,
+      ...(text
+        ? {
+            $or: [
+              { id: { $regex: pattern, $options: "i" } },
+              { "profile.name": { $regex: pattern, $options: "i" } },
+              { status: { $regex: pattern, $options: "i" } },
+            ],
+          }
+        : {}),
+    };
+
+    const collection = db.collection("runs");
+
+    const [runs, total] = await Promise.all([
+      collection
+        .find(filter, { projection: { events: 0 } })
         .sort({ startedAt: -1 })
-        .limit(20)
+        .skip(offset)
+        .limit(limit)
         .toArray(),
-    ),
-  );
+      collection.countDocuments(filter),
+    ]);
+
+    res
+      .set({
+        "X-Total-Count": String(total),
+        "X-Page": String(page),
+        "X-Page-Size": String(limit),
+      })
+      .json(runs);
+  });
 
   router.get("/api/runs/:id", async (req, res) => {
     const run = await db
