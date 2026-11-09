@@ -47,7 +47,7 @@ export function runsRoutes(
     }
 
     const text = query.trim();
-    const pattern = RegExp.escape(text);
+    const pattern = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     const filter = {
       ownerId: req.userId,

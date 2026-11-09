@@ -110,12 +110,12 @@ test("feature routes retain origin rejection, owner filtering and JSON errors", 
 test("run history supports owner-scoped search and pagination", async (t) => {
   const { request, database } = await fixture(t);
 
-  const response = await request("/api/runs?q=completed&page=3&limit=5");
+  const response = await request("/api/runs?q=completed.*&page=3&limit=5");
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), []);
 
-  const pattern = RegExp.escape("completed");
+  const pattern = "completed\\.\\*";
 
   assert.deepEqual(database.findQuery, {
     ownerId: "alice",
