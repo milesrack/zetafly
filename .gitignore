@@ -1,6 +1,5 @@
 node_modules/
 research/data/*
-!research/data/.gitkeep
 research/cache/
 web/dist/
 .env*

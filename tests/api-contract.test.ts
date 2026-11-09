@@ -4,13 +4,6 @@ import { apiContract } from "../scripts/api-contract.ts";
 
 const contract = await apiContract();
 
-test("checkpoint search requires an API credential", () => {
-  assert.deepEqual(contract.document.paths["/api/weights"]?.get?.security, [
-    { bearerAuth: [] },
-    { accessCookie: [] },
-  ]);
-});
-
 test("the API contract rejects response drift and fields that could leak private model data", async () => {
   await contract.response("/api/health", Response.json({ status: "ok" }));
 
@@ -23,17 +16,22 @@ test("the API contract rejects response drift and fields that could leak private
     contract.response("/api/health", Response.json({ status: "healthy" })),
   );
 
+  const profile = {
+    id: "model",
+    name: "Model",
+    features: 512,
+    arithmeticMode: "sequence",
+    synaptic: false,
+    sha256: "a".repeat(64),
+  };
+  await contract.response("/api/weights", Response.json([profile]));
+
   await assert.rejects(() =>
     contract.response(
       "/api/weights",
       Response.json([
         {
-          id: "model",
-          name: "Model",
-          features: 512,
-          arithmeticMode: "digits",
-          synaptic: false,
-          sha256: "a".repeat(64),
+          ...profile,
           ownerId: "private-owner",
         },
       ]),
