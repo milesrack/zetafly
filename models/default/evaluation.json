@@ -1,500 +1,85 @@
 {
-  "checkpointSha256": "63255d44dc8c3cf9c16431fed65c1f4e4ea27595cde27c41fbb96d176c147921",
-  "scope": "memorised_2_to_5_factors",
-  "evaluation": "in_sample",
-  "settings": {
-    "add": true,
-    "sub": true,
-    "mul": true,
-    "div": true,
-    "add_left_min": 2,
-    "add_left_max": 5,
-    "add_right_min": 2,
-    "add_right_max": 5,
-    "mul_left_min": 2,
-    "mul_left_max": 5,
-    "mul_right_min": 2,
-    "mul_right_max": 5,
-    "duration": 120,
-    "profileId": "published"
-  },
-  "audit": {
-    "examples": 64,
-    "correct": 64,
-    "byOperation": {
-      "+": {
-        "correct": 16,
-        "total": 16
-      },
-      "-": {
-        "correct": 16,
-        "total": 16
-      },
-      "*": {
-        "correct": 16,
-        "total": 16
-      },
-      "/": {
-        "correct": 16,
-        "total": 16
+  "checkpointSha256": "331b9105837d38474f60d3e8b7f7e30249da21432661a155ede4780edaad6573",
+  "conditions": {
+    "validation": {
+      "correct": 3967,
+      "total": 4032,
+      "withinThree": 4029,
+      "maxDifference": 1.5385001006507082e-6,
+      "byOperation": {
+        "+": {
+          "correct": 1008,
+          "total": 1008
+        },
+        "-": {
+          "correct": 1008,
+          "total": 1008
+        },
+        "*": {
+          "correct": 943,
+          "total": 1008
+        },
+        "/": {
+          "correct": 1008,
+          "total": 1008
+        }
       }
     },
-    "cases": [
-      {
-        "expression": "2+2",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4-2",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "2*2",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4/2",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "2+3",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5-2",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "2*3",
-        "expected": "6",
-        "answer": "6",
-        "keys": ["6", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "6/2",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "2+4",
-        "expected": "6",
-        "answer": "6",
-        "keys": ["6", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "6-2",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "2*4",
-        "expected": "8",
-        "answer": "8",
-        "keys": ["8", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "8/2",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "2+5",
-        "expected": "7",
-        "answer": "7",
-        "keys": ["7", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "7-2",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "2*5",
-        "expected": "10",
-        "answer": "10",
-        "keys": ["1", "0", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "10/2",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3+2",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5-3",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3*2",
-        "expected": "6",
-        "answer": "6",
-        "keys": ["6", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "6/3",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3+3",
-        "expected": "6",
-        "answer": "6",
-        "keys": ["6", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "6-3",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3*3",
-        "expected": "9",
-        "answer": "9",
-        "keys": ["9", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "9/3",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3+4",
-        "expected": "7",
-        "answer": "7",
-        "keys": ["7", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "7-3",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3*4",
-        "expected": "12",
-        "answer": "12",
-        "keys": ["1", "2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "12/3",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3+5",
-        "expected": "8",
-        "answer": "8",
-        "keys": ["8", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "8-3",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "3*5",
-        "expected": "15",
-        "answer": "15",
-        "keys": ["1", "5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "15/3",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4+2",
-        "expected": "6",
-        "answer": "6",
-        "keys": ["6", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "6-4",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4*2",
-        "expected": "8",
-        "answer": "8",
-        "keys": ["8", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "8/4",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4+3",
-        "expected": "7",
-        "answer": "7",
-        "keys": ["7", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "7-4",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4*3",
-        "expected": "12",
-        "answer": "12",
-        "keys": ["1", "2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "12/4",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4+4",
-        "expected": "8",
-        "answer": "8",
-        "keys": ["8", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "8-4",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4*4",
-        "expected": "16",
-        "answer": "16",
-        "keys": ["1", "6", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "16/4",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4+5",
-        "expected": "9",
-        "answer": "9",
-        "keys": ["9", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "9-4",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "4*5",
-        "expected": "20",
-        "answer": "20",
-        "keys": ["2", "0", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "20/4",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5+2",
-        "expected": "7",
-        "answer": "7",
-        "keys": ["7", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "7-5",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5*2",
-        "expected": "10",
-        "answer": "10",
-        "keys": ["1", "0", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "10/5",
-        "expected": "2",
-        "answer": "2",
-        "keys": ["2", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5+3",
-        "expected": "8",
-        "answer": "8",
-        "keys": ["8", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "8-5",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5*3",
-        "expected": "15",
-        "answer": "15",
-        "keys": ["1", "5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "15/5",
-        "expected": "3",
-        "answer": "3",
-        "keys": ["3", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5+4",
-        "expected": "9",
-        "answer": "9",
-        "keys": ["9", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "9-5",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5*4",
-        "expected": "20",
-        "answer": "20",
-        "keys": ["2", "0", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "20/5",
-        "expected": "4",
-        "answer": "4",
-        "keys": ["4", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5+5",
-        "expected": "10",
-        "answer": "10",
-        "keys": ["1", "0", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "10-5",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "5*5",
-        "expected": "25",
-        "answer": "25",
-        "keys": ["2", "5", "Enter"],
-        "terminated": true
-      },
-      {
-        "expression": "25/5",
-        "expected": "5",
-        "answer": "5",
-        "keys": ["5", "Enter"],
-        "terminated": true
+    "test": {
+      "correct": 3631,
+      "total": 3680,
+      "withinThree": 3680,
+      "maxDifference": 1.5058917313126585e-6,
+      "byOperation": {
+        "+": {
+          "correct": 920,
+          "total": 920
+        },
+        "-": {
+          "correct": 920,
+          "total": 920
+        },
+        "*": {
+          "correct": 871,
+          "total": 920
+        },
+        "/": {
+          "correct": 920,
+          "total": 920
+        }
       }
-    ]
+    },
+    "extrapolation": {
+      "correct": 336,
+      "total": 1000,
+      "withinThree": 521,
+      "maxDifference": 1.2630225683096796e-6,
+      "byOperation": {
+        "+": {
+          "correct": 160,
+          "total": 250
+        },
+        "-": {
+          "correct": 170,
+          "total": 250
+        },
+        "*": {
+          "correct": 0,
+          "total": 250
+        },
+        "/": {
+          "correct": 6,
+          "total": 250
+        }
+      }
+    }
   },
-  "browser": {
-    "duration": 120,
-    "correct": 122,
-    "attempts": 122,
-    "operations": ["-", "+", "/", "*"],
-    "allKeysTrusted": true
-  }
+  "scope": "factor_pairs_2_to_100",
+  "evaluation": "held_out_pair_families; repeated verification of the original test split, not a new holdout",
+  "runtime": "fly-brain-v1 / NPZ 11; float64",
+  "limitations": [
+    "Trained feed-forward fly subcircuit, not the full recurrent brain.",
+    "First-answer accuracy is 98.67%; multiplication is 94.67%.",
+    "Factors 101\u2013120 score 33.6%; performance outside the training range is limited."
+  ]
 }

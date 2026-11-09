@@ -41,18 +41,22 @@ for await (const line of createInterface({ input: process.stdin })) {
       !Number.isSafeInteger(request.b) ||
       !["+", "-", "*", "/"].includes(request.operation)
     ) {
-      throw Error("Invalid sequence inference request");
+      throw Error("Invalid model inference request");
     }
 
     const startedAt = Date.now();
     const started = performance.now();
     const rates: [number, number, number][] = [];
+    let through = 0;
     const result = runPolicy(
       brain,
       `${request.a}${request.operation}${request.b}`,
       () => {
         const neural = brain.activity();
-        rates.push(...(neural.rates ?? []));
+        rates.push(
+          ...(neural.rates ?? []).filter(([, step]) => step > through),
+        );
+        through = Math.max(through, neural.rateSteps ?? 0);
         neural.rates = [...rates];
 
         send({

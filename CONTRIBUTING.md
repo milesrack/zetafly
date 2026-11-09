@@ -27,6 +27,8 @@ npx playwright install chromium webkit
 npm run test:e2e
 ```
 
+For model upload or runtime changes, run `node scripts/verify-brain-upload.ts --model models/default/weights.npz` against the local Docker app and test inbox.
+
 For simulator changes, run `npm run model:fetch && npm run test:simulator`.
 
 ## Code organisation

@@ -1682,7 +1682,6 @@ components:
         - id
         - name
         - features
-        - arithmeticMode
         - synaptic
         - sha256
       additionalProperties: false
@@ -1694,10 +1693,6 @@ components:
         features:
           type: integer
           minimum: 0
-        arithmeticMode:
-          type: string
-          enum:
-            - sequence
         synaptic:
           type: boolean
         sha256:

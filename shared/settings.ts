@@ -19,8 +19,8 @@ export const ZETAMAC_SETTINGS: Readonly<Settings> = Object.freeze({
 
 export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   ...ZETAMAC_SETTINGS,
-  add_left_max: 5,
-  add_right_max: 5,
-  mul_left_max: 5,
-  mul_right_max: 5,
+  add_left_max: 100,
+  add_right_max: 100,
+  mul_left_max: 100,
+  mul_right_max: 100,
 });

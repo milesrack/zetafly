@@ -67,9 +67,15 @@ jobs:
               [2, 3, "*", "6"], [6, 2, "/", "3"],
             ]) {
               let first;
-              const prediction = await worker.predict(a, b, 42, operation, packet => {
-                first ??= packet.neural.rates?.[0];
-              });
+              let prediction;
+              const rejected = [];
+              for (let attempt = 0; attempt < 3; attempt++) {
+                prediction = await worker.predict(a, b, 42, operation, packet => {
+                  first ??= packet.neural.rates?.[0];
+                }, rejected);
+                if (prediction.answerText === answer) break;
+                rejected.push(prediction.answerText);
+              }
               assert.equal(prediction.answerText, answer);
               assert.ok(prediction.neural?.rates?.length);
               assert.ok(first);

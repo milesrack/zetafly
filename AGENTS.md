@@ -7,7 +7,6 @@ Read the relevant code and check `git status` before editing. Preserve unrelated
 - Follow the existing TypeScript, React, Express, and MongoDB structure. Shared API types belong in `shared/`.
 - Use Prettier for formatting and Biome for linting. Declare one variable per declaration, use braces, and separate logical steps with blank lines.
 - Prefer direct code over extra abstractions. Add comments only when the reason is not clear from the code.
-- The app accepts sequence-model `.npz` checkpoints. `research/simulator.ts` is the numerical parity reference; it is not the app's model runtime.
 - Keep secrets, downloaded data, and generated training output out of Git.
 
 ## Verification

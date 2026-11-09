@@ -66,7 +66,9 @@ export function runsRoutes(
 
     const [runs, total] = await Promise.all([
       collection
-        .find(filter, { projection: { events: 0 } })
+        .find(filter, {
+          projection: { events: 0, "profile.arithmeticMode": 0 },
+        })
         .sort({ startedAt: -1 })
         .skip(offset)
         .limit(limit)
@@ -86,7 +88,10 @@ export function runsRoutes(
   router.get("/api/runs/:id", async (req, res) => {
     const run = await db
       .collection("runs")
-      .findOne({ id: req.params.id, ownerId: req.userId });
+      .findOne(
+        { id: req.params.id, ownerId: req.userId },
+        { projection: { "profile.arithmeticMode": 0 } },
+      );
 
     if (!run) {
       return res.status(404).json({ error: "Run not found" });

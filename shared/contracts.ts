@@ -135,7 +135,6 @@ export type Profile = {
   id: string;
   name: string;
   features: number;
-  arithmeticMode: "sequence";
   synaptic: boolean;
   sha256: string;
 };
