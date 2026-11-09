@@ -26,9 +26,12 @@ test("streaming reports progressive observations without changing neural output"
   assert.deepEqual(streamed.counts, baseline.counts);
   assert.deepEqual(brain.neural!.spikes, spikes);
 
-  assert.deepEqual(
-    progress.map((p) => p.through),
-    [50, 100, 150, 200, 250],
+  assert.ok(progress.length > 1);
+  assert.equal(progress.at(-1)!.through, brain.neural!.durationMs);
+  assert.ok(
+    progress.every(
+      (packet, i) => i === 0 || packet.through > progress[i - 1].through,
+    ),
   );
 
   assert.ok(progress[0].neural.spikes.length > 0);

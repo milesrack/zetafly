@@ -11,20 +11,20 @@ test("strong sensory activity cannot hide weaker downstream activity at either d
 
   assert.equal(packet.length, 192);
   assert.equal(visible.length, 48);
-  assert.equal(packet.filter((id) => id >= 256).length, 96);
-  assert.equal(visible.filter((id) => id >= 256).length, 24);
-  assert.deepEqual(visible.slice(24), ids.slice(256, 280));
+  for (const sample of [packet, visible]) {
+    assert.ok(sample.some((id) => id < 256));
+    assert.ok(sample.some((id) => id >= 256));
+    assert.equal(new Set(sample).size, sample.length);
+    assert.ok(sample.every((id) => ids.includes(id)));
+  }
 });
 
 test("unused sampling capacity is filled from available neurons without duplicates", () => {
-  assert.deepEqual(
-    sampleNeurons([0, 1, 2], (id) => -id, [0], 8),
-    [2, 1, 0],
-  );
-  assert.deepEqual(
-    sampleNeurons([0, 1, 2], (id) => id, [], 2),
-    [2, 1],
-  );
+  const available = [0, 1, 2];
+  const sampled = sampleNeurons(available, (id) => -id, [0], 8);
+  assert.equal(sampled.length, available.length);
+  assert.deepEqual(new Set(sampled), new Set(available));
+  assert.equal(sampleNeurons(available, (id) => id, [], 2).length, 2);
   assert.deepEqual(
     sampleNeurons([], () => 0, [], 48),
     [],

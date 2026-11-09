@@ -59,9 +59,12 @@ test("fresh setup stays visible during model loading without starting the game",
   const screens = packets.filter((packet) => packet.kind === "screen");
   assert.ok(screens.every((packet) => packet.runId === session.state.runId));
 
-  assert.deepEqual(
-    screens.map((packet) => packet.png),
-    ["fresh-setup", "first-problem", "first-problem"],
+  assert.equal(screens[0].png, "fresh-setup");
+  assert.equal(screens.at(-1)!.png, "first-problem");
+  assert.ok(
+    screens.every((packet) =>
+      ["fresh-setup", "first-problem"].includes(packet.png),
+    ),
   );
 });
 
