@@ -26,6 +26,22 @@ jobs:
         working-directory: mobile
         run: flutter pub get
 
+      - name: Configure Android signing
+        working-directory: mobile/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/zetafly-keystore.jks"
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=%s\n' \
+            "$KEYSTORE_PASSWORD" \
+            "$KEY_PASSWORD" \
+            "$KEY_ALIAS" \
+            "$RUNNER_TEMP/zetafly-keystore.jks" \
+            > key.properties
+
       - name: Build APK
         working-directory: mobile
         run: flutter build apk --release
