@@ -34,39 +34,16 @@ class WebViewScreen extends StatefulWidget {
   State<WebViewScreen> createState() => _WebViewScreenState();
 }
 
-class _WebViewScreenState extends State<WebViewScreen>
-    with WidgetsBindingObserver {
+class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse('https://zetafly.poosd.dev/'));
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed &&
-        state != AppLifecycleState.paused &&
-        state != AppLifecycleState.hidden) {
-      return;
-    }
-
-    // The website owns audio; the wrapper only reports its visibility.
-    _controller.runJavaScript(
-      'window.dispatchEvent(new CustomEvent("zetafly:visibility", '
-      '{ detail: ${state == AppLifecycleState.resumed} }));',
-    );
   }
 
   @override

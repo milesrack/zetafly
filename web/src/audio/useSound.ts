@@ -23,7 +23,6 @@ function stored(): Preferences {
 class SoundOutput {
   preferences = defaults;
   playing = false;
-  appVisible = true;
   context?: AudioContext;
   private clickBuffer?: AudioBuffer;
   private musicBuffer?: AudioBuffer;
@@ -44,7 +43,6 @@ class SoundOutput {
     if (
       this.disposed ||
       document.hidden ||
-      !this.appVisible ||
       this.preferences.muted ||
       (!this.preferences.keyboard && !this.preferences.music)
     ) {
@@ -105,8 +103,7 @@ class SoundOutput {
 
   sync = () => {
     const context = this.context;
-    const active =
-      !this.preferences.muted && !document.hidden && this.appVisible;
+    const active = !this.preferences.muted && !document.hidden;
 
     if (
       active &&
@@ -143,7 +140,6 @@ class SoundOutput {
     if (
       !this.playing ||
       document.hidden ||
-      !this.appVisible ||
       this.preferences.muted ||
       !this.preferences.keyboard ||
       context?.state !== "running"
@@ -224,22 +220,11 @@ export function useSound() {
       sound.sync();
     };
 
-    const appVisibility = (event: Event) => {
-      const visible = (event as CustomEvent<unknown>).detail;
-
-      if (typeof visible === "boolean") {
-        sound.appVisible = visible;
-        visibility();
-      }
-    };
-
-    window.addEventListener("zetafly:visibility", appVisibility);
     document.addEventListener("pointerdown", activate);
     document.addEventListener("keydown", activate);
     document.addEventListener("visibilitychange", visibility);
 
     return () => {
-      window.removeEventListener("zetafly:visibility", appVisibility);
       document.removeEventListener("pointerdown", activate);
       document.removeEventListener("keydown", activate);
       document.removeEventListener("visibilitychange", visibility);

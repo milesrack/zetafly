@@ -379,33 +379,6 @@ for (const engine of [chromium, webkit]) {
       "returning resumes music from its saved position",
     );
 
-    const beforeAppHide = await counts();
-    await page.evaluate(() => {
-      window.dispatchEvent(
-        new CustomEvent("zetafly:visibility", { detail: false }),
-      );
-      document.dispatchEvent(new Event("visibilitychange"));
-    });
-    assert.equal(
-      (await counts()).stops,
-      beforeAppHide.stops + 1,
-      "backgrounding the native app stops music even when its WebView reports visible",
-    );
-    assert.equal(
-      (await counts()).music,
-      beforeAppHide.music,
-      "browser visibility cannot override the native app being hidden",
-    );
-    await page.evaluate(() =>
-      window.dispatchEvent(
-        new CustomEvent("zetafly:visibility", { detail: true }),
-      ),
-    );
-    await page.waitForFunction(
-      (count) => window.__sound.music === count + 1,
-      beforeAppHide.music,
-    );
-
     const lastKeyTime = await key(8);
     await clicks(4);
 
@@ -507,20 +480,6 @@ for (const engine of [chromium, webkit]) {
       "saved mute prevents audio creation on load",
     );
 
-    await page.evaluate(() => {
-      window.dispatchEvent(
-        new CustomEvent("zetafly:visibility", { detail: false }),
-      );
-      window.dispatchEvent(
-        new CustomEvent("zetafly:visibility", { detail: true }),
-      );
-    });
-    assert.equal(
-      (await counts()).contexts,
-      0,
-      "returning to the app must respect saved mute",
-    );
-
     // Retain native decoding and audio nodes while simulating a gesture-only policy.
     await page.addInitScript(() => {
       const Native = window.AudioContext;
@@ -604,7 +563,7 @@ for (const engine of [chromium, webkit]) {
     assert.deepEqual(errors, []);
 
     console.log(
-      `${engine.name()}: ambient autoplay/gesture fallback before Start, keyboard dedup, pause/scrub, mute, views, hidden-tab/app pause and resume, run-independent ambience, replay, saved off/mute passed`,
+      `${engine.name()}: ambient autoplay/gesture fallback before Start, keyboard dedup, pause/scrub, mute, views, hidden-tab pause and resume, run-independent ambience, replay, saved off/mute passed`,
     );
   } finally {
     await browser.close();
