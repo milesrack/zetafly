@@ -24,6 +24,14 @@ export type Settings = Record<RangeKey, number> & {
   profileId: string;
 };
 
+export type RunSummary = {
+  id: string;
+  startedAt: string;
+  profile?: { name?: string } | null;
+  status: string;
+  accepted: number;
+};
+
 export type PhysicalKey = {
   code: string;
   label: string;

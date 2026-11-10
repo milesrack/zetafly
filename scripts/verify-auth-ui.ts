@@ -88,6 +88,70 @@ for (const engine of [chromium, webkit]) {
   const browser = await engine.launch();
 
   try {
+    const historyPage = await browser.newPage({
+      viewport: { width: 390, height: 720 },
+    });
+    await mock(historyPage, true);
+    await historyPage.route("**/api/runs?*", async (route) => {
+      const params = new URL(route.request().url()).searchParams;
+      const page = params.get("page");
+      const query = params.get("q");
+      assert.equal(params.get("limit"), "10");
+
+      await route.fulfill({
+        headers: { "X-Total-Count": query ? "1" : "11" },
+        json: [
+          {
+            id: `run-${page}`,
+            startedAt: "2026-11-09T00:00:00.000Z",
+            profile: { name: query ? "Custom weights" : `Weights ${page}` },
+            status: "completed",
+            accepted: 12,
+          },
+        ],
+      });
+    });
+
+    await historyPage.goto(base);
+    await historyPage
+      .getByRole("button", { name: "Account", exact: true })
+      .click();
+    await historyPage
+      .getByRole("button", { name: "History", exact: true })
+      .click();
+
+    const history = historyPage.getByRole("dialog", { name: "Run history" });
+    await history.getByText("Weights 1", { exact: true }).waitFor();
+    await history.getByText("Score: 12", { exact: true }).waitFor();
+    await history.getByRole("button", { name: "Next", exact: true }).click();
+    await history.getByText("Weights 2", { exact: true }).waitFor();
+    assert.ok(
+      await history
+        .getByRole("button", { name: "Next", exact: true })
+        .isDisabled(),
+    );
+    await history
+      .getByRole("button", { name: "Previous", exact: true })
+      .click();
+    await history.getByText("Weights 1", { exact: true }).waitFor();
+    await history.getByRole("button", { name: "Next", exact: true }).click();
+    await history.getByText("Weights 2", { exact: true }).waitFor();
+
+    const searchRequest = historyPage.waitForRequest((request) => {
+      const url = new URL(request.url());
+      return (
+        url.pathname === "/api/runs" &&
+        url.searchParams.get("q") === "Cust" &&
+        url.searchParams.get("page") === "1"
+      );
+    });
+    await history.getByRole("searchbox", { name: "Search runs" }).fill("Cust");
+    await searchRequest;
+    await history.getByText("Custom weights", { exact: true }).waitFor();
+    await history.getByRole("button", { name: "Close history" }).click();
+    await history.waitFor({ state: "hidden" });
+    await historyPage.close();
+
     const failurePage = await browser.newPage();
     failurePage.setDefaultTimeout(30000);
     const failed = {
