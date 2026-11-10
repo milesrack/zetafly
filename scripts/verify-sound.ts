@@ -349,8 +349,8 @@ for (const engine of [chromium, webkit]) {
 
     assert.equal(
       (await counts()).stops,
-      beforeHide.stops,
-      "background tabs keep ambient music playing",
+      beforeHide.stops + 1,
+      "hidden tabs stop ambient music",
     );
 
     await key(7);
@@ -370,10 +370,40 @@ for (const engine of [chromium, webkit]) {
       document.dispatchEvent(new Event("visibilitychange"));
     });
 
+    await page.waitForFunction(
+      (count) => window.__sound.music === count + 1,
+      beforeHide.music,
+    );
+    assert.ok(
+      (await counts()).offsets.at(-1)! > 0,
+      "returning resumes music from its saved position",
+    );
+
+    const beforeAppHide = await counts();
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("zetafly:visibility", { detail: false }),
+      );
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    assert.equal(
+      (await counts()).stops,
+      beforeAppHide.stops + 1,
+      "backgrounding the native app stops music even when its WebView reports visible",
+    );
     assert.equal(
       (await counts()).music,
-      beforeHide.music,
-      "returning to the tab does not restart ambient music",
+      beforeAppHide.music,
+      "browser visibility cannot override the native app being hidden",
+    );
+    await page.evaluate(() =>
+      window.dispatchEvent(
+        new CustomEvent("zetafly:visibility", { detail: true }),
+      ),
+    );
+    await page.waitForFunction(
+      (count) => window.__sound.music === count + 1,
+      beforeAppHide.music,
     );
 
     const lastKeyTime = await key(8);
@@ -477,6 +507,20 @@ for (const engine of [chromium, webkit]) {
       "saved mute prevents audio creation on load",
     );
 
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("zetafly:visibility", { detail: false }),
+      );
+      window.dispatchEvent(
+        new CustomEvent("zetafly:visibility", { detail: true }),
+      );
+    });
+    assert.equal(
+      (await counts()).contexts,
+      0,
+      "returning to the app must respect saved mute",
+    );
+
     // Retain native decoding and audio nodes while simulating a gesture-only policy.
     await page.addInitScript(() => {
       const Native = window.AudioContext;
@@ -560,7 +604,7 @@ for (const engine of [chromium, webkit]) {
     assert.deepEqual(errors, []);
 
     console.log(
-      `${engine.name()}: ambient autoplay/gesture fallback before Start, keyboard dedup, pause/scrub, mute, views, background music continuity, run-independent ambience, replay, saved off/mute passed`,
+      `${engine.name()}: ambient autoplay/gesture fallback before Start, keyboard dedup, pause/scrub, mute, views, hidden-tab/app pause and resume, run-independent ambience, replay, saved off/mute passed`,
     );
   } finally {
     await browser.close();
