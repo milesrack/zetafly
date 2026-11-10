@@ -1,0 +1,4 @@
+storePassword=
+keyPassword=
+keyAlias=zetafly
+storeFile=C\:\\Users\\USER\\AndroidKeystores\\zetafly-keystore.jks

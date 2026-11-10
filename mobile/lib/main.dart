@@ -21,9 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Zetafly',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-      ),
+      theme: ThemeData(scaffoldBackgroundColor: Colors.white),
       home: const WebViewScreen(),
     );
   }
@@ -36,7 +34,8 @@ class WebViewScreen extends StatefulWidget {
   State<WebViewScreen> createState() => _WebViewScreenState();
 }
 
-class _WebViewScreenState extends State<WebViewScreen> with WidgetsBindingObserver {
+class _WebViewScreenState extends State<WebViewScreen>
+    with WidgetsBindingObserver {
   late final WebViewController _controller;
 
   @override
@@ -85,7 +84,8 @@ class _WebViewScreenState extends State<WebViewScreen> with WidgetsBindingObserv
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Only pause audio when the app is actually placed in the background (paused/hidden)
     // Ignore 'inactive' so pulling down the top notification shade won't stop the audio.
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
       _controller.runJavaScript('''
         try {
           if (window.__activeAudioContexts) {
@@ -131,9 +131,7 @@ class _WebViewScreenState extends State<WebViewScreen> with WidgetsBindingObserv
         }
       },
       child: Scaffold(
-        body: SafeArea(
-          child: WebViewWidget(controller: _controller),
-        ),
+        body: SafeArea(child: WebViewWidget(controller: _controller)),
       ),
     );
   }

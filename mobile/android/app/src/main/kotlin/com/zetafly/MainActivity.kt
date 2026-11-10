@@ -1,4 +1,4 @@
-package com.zetafly.zetafly
+package com.zetafly
 
 import io.flutter.embedding.android.FlutterActivity
 
