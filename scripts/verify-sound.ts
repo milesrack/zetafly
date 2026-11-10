@@ -349,8 +349,8 @@ for (const engine of [chromium, webkit]) {
 
     assert.equal(
       (await counts()).stops,
-      beforeHide.stops,
-      "background tabs keep ambient music playing",
+      beforeHide.stops + 1,
+      "hidden tabs stop ambient music",
     );
 
     await key(7);
@@ -370,10 +370,13 @@ for (const engine of [chromium, webkit]) {
       document.dispatchEvent(new Event("visibilitychange"));
     });
 
-    assert.equal(
-      (await counts()).music,
+    await page.waitForFunction(
+      (count) => window.__sound.music === count + 1,
       beforeHide.music,
-      "returning to the tab does not restart ambient music",
+    );
+    assert.ok(
+      (await counts()).offsets.at(-1)! > 0,
+      "returning resumes music from its saved position",
     );
 
     const lastKeyTime = await key(8);
@@ -560,7 +563,7 @@ for (const engine of [chromium, webkit]) {
     assert.deepEqual(errors, []);
 
     console.log(
-      `${engine.name()}: ambient autoplay/gesture fallback before Start, keyboard dedup, pause/scrub, mute, views, background music continuity, run-independent ambience, replay, saved off/mute passed`,
+      `${engine.name()}: ambient autoplay/gesture fallback before Start, keyboard dedup, pause/scrub, mute, views, hidden-tab pause and resume, run-independent ambience, replay, saved off/mute passed`,
     );
   } finally {
     await browser.close();
