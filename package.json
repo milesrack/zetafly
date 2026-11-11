@@ -29,7 +29,7 @@
     "test:deletion": "docker compose exec -T -w /app/server -e RESEND_API_KEY= app node --input-type=module-typescript < scripts/verify-account-deletion.ts",
     "test:security": "docker compose exec -T -w /app/server -e RESEND_API_KEY= app node --input-type=module-typescript < scripts/verify-auth-security.ts",
     "test:simulator": "node scripts/verify-simulator.ts",
-    "test:e2e": "node scripts/verify-sound.ts && node scripts/verify-auth-ui.ts && node scripts/verify-playback.ts"
+    "test:e2e": "node scripts/verify-sound.ts && node scripts/verify-auth-ui.ts && node scripts/verify-playback.ts && node scripts/verify-mobile.ts"
   },
   "dependencies": {
     "@better-auth/mongo-adapter": "1.7.10",

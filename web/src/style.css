@@ -1265,3 +1265,209 @@ select {
     left: max(16px, env(safe-area-inset-left));
   }
 }
+
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  :root {
+    --mobile-label-size: 14px;
+    --mobile-control-size: 16px;
+    --mobile-heading-size: 20px;
+    --mobile-target-size: 44px;
+  }
+
+  button,
+  .choice-item,
+  .weight-actions a {
+    min-width: var(--mobile-target-size);
+  }
+  button,
+  .account-setting-action,
+  .form-submit,
+  .auth-switch,
+  .auth-recovery,
+  .auth-footer button,
+  .choice-item,
+  .weight-actions a,
+  .operation-options label,
+  .account-content input:not([type="checkbox"]),
+  .range-row input,
+  .weight-menu [cmdk-input],
+  select {
+    min-height: var(--mobile-target-size);
+  }
+  .choice-trigger {
+    max-width: 100%;
+  }
+
+  .drawer-heading h2 {
+    font-size: var(--mobile-heading-size);
+  }
+  .account-content strong,
+  .account-name,
+  legend,
+  .raster-heading h2 {
+    font-size: var(--mobile-control-size);
+  }
+  .form-error,
+  .account-content label,
+  .account-content p,
+  .account-content .auth-footer,
+  .account-content .form-error,
+  .account-content .email-confirmation,
+  .account-content .delete-confirmation,
+  .password-feedback,
+  .auth-recovery,
+  .password-reveal,
+  .auth-switch,
+  .account-email,
+  .operation-options label,
+  .range-row span,
+  .setting,
+  .weight-upload small,
+  .weight-search-message,
+  .anatomy-loading,
+  .activity-empty,
+  .raster-heading,
+  .raster-legend,
+  .timeline-times,
+  .timeline-live,
+  .error-toast {
+    font-size: var(--mobile-label-size);
+  }
+
+  /* iPhone browsers zoom focused form fields when their text is below 16px. */
+  .account-content input,
+  .range-row input,
+  .weight-menu [cmdk-input],
+  input[type="number"],
+  select,
+  .form-submit,
+  .run-button,
+  .session-button,
+  .account-button,
+  .account-menu button,
+  .account-setting-action,
+  .choice-trigger,
+  .choice-item,
+  .weight-upload,
+  .weight-actions button,
+  .weight-actions a,
+  .text-button,
+  .activity-button,
+  .view-controls button,
+  .brain-timeline .choice-trigger {
+    font-size: var(--mobile-control-size);
+  }
+  .icon-button,
+  .account-button,
+  .account-menu .copy-email,
+  .timeline-play,
+  .timeline-skip {
+    width: var(--mobile-target-size);
+    height: var(--mobile-target-size);
+    flex-shrink: 0;
+  }
+  .account-menu .copy-email {
+    opacity: 1;
+  }
+  .account-content .password-input input {
+    padding-right: 64px;
+  }
+
+  .app-header {
+    flex-wrap: nowrap;
+  }
+  .view-switcher {
+    width: calc(100% - 8px);
+    max-width: 440px;
+  }
+  .view-controls {
+    width: 100%;
+    gap: 4px;
+  }
+  .view-controls button {
+    flex: 1 0 auto;
+    padding: 7px 12px;
+  }
+  .account-menu {
+    top: 60px;
+    right: 16px;
+  }
+  .setting {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .choice-menu {
+    max-width: calc(100vw - 24px);
+  }
+  .weight-actions {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+  .weight-actions a {
+    display: inline-flex;
+    align-items: center;
+  }
+  .operation-options {
+    gap: 4px 12px;
+  }
+  .operation-options label {
+    gap: 10px;
+  }
+  .setting input[type="checkbox"],
+  .operation-options input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .account-content .delete-confirmation {
+    min-height: var(--mobile-target-size);
+    align-items: center;
+  }
+  .account-content .delete-confirmation input {
+    width: 20px;
+    height: 20px;
+  }
+  .raster-legend {
+    flex-wrap: wrap;
+  }
+  .spike-panel {
+    top: 72px;
+    max-height: calc(100% - 96px);
+    overflow: auto;
+  }
+  .raster text {
+    font-size: 12px;
+  }
+
+  .brain-timeline {
+    bottom: max(82px, calc(env(safe-area-inset-bottom) + 64px));
+  }
+  .timeline-track,
+  .timeline-seek {
+    height: var(--mobile-target-size);
+  }
+  .timeline-track::before,
+  .timeline-fill {
+    top: 20px;
+  }
+  .timeline-transport {
+    grid-template-columns: 1fr repeat(3, var(--mobile-target-size)) 1fr;
+  }
+  .brain-timeline .choice-trigger {
+    min-height: var(--mobile-target-size);
+    gap: 4px;
+    padding: 4px;
+  }
+  .timeline-times {
+    gap: 8px;
+  }
+  .timeline-seek::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    margin-top: -6px;
+  }
+  .timeline-seek::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+  }
+}

@@ -42,6 +42,7 @@ class SoundOutput {
   activate = () => {
     if (
       this.disposed ||
+      document.hidden ||
       this.preferences.muted ||
       (!this.preferences.keyboard && !this.preferences.music)
     ) {
@@ -102,7 +103,7 @@ class SoundOutput {
 
   sync = () => {
     const context = this.context;
-    const active = !this.preferences.muted;
+    const active = !this.preferences.muted && !document.hidden;
 
     if (
       active &&
