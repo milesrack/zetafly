@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, type Page, type WebSocketRoute, webkit } from "playwright";
 import { DEFAULTS } from "../server/settings.ts";
@@ -213,16 +214,14 @@ for (const engine of [chromium, webkit]) {
 
     const exportLink = history.getByRole("link", { name: "Export JSON" });
     await exportLink.waitFor();
-    const exportedRecord = await exportLink.evaluate(async (link) => {
-      const response = await fetch((link as HTMLAnchorElement).href);
-      return response.json();
-    });
-    assert.deepEqual(exportedRecord, savedRun);
-
     const downloadingRun = historyPage.waitForEvent("download");
     await exportLink.click();
     const runDownload = await downloadingRun;
     assert.equal(runDownload.suggestedFilename(), "zetafly-run-run-1.json");
+    const exportPath = await runDownload.path();
+    assert.ok(exportPath, "The exported run must download successfully");
+    const exportedRecord = JSON.parse(await readFile(exportPath, "utf8"));
+    assert.deepEqual(exportedRecord, savedRun);
 
     await history.getByRole("button", { name: "Back to history" }).click();
     assert.equal(
