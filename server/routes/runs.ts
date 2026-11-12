@@ -4,6 +4,12 @@ import type { OwnerMutation } from "../owner-operations.ts";
 import type { SessionManager } from "../session-manager.ts";
 import { parseSettings } from "../settings.ts";
 
+const PUBLIC_RUN_PROJECTION = {
+  _id: 0,
+  ownerId: 0,
+  "profile.arithmeticMode": 0,
+} as const;
+
 export function runsRoutes(
   db: Db,
   sessions: SessionManager,
@@ -54,9 +60,15 @@ export function runsRoutes(
       ...(text
         ? {
             $or: [
-              { id: { $regex: pattern, $options: "i" } },
-              { "profile.name": { $regex: pattern, $options: "i" } },
-              { status: { $regex: pattern, $options: "i" } },
+              {
+                id: { $regex: pattern, $options: "i" },
+              },
+              {
+                "profile.name": { $regex: pattern, $options: "i" },
+              },
+              {
+                status: { $regex: pattern, $options: "i" },
+              },
             ],
           }
         : {}),
@@ -67,12 +79,16 @@ export function runsRoutes(
     const [runs, total] = await Promise.all([
       collection
         .find(filter, {
-          projection: { events: 0, "profile.arithmeticMode": 0 },
+          projection: {
+            ...PUBLIC_RUN_PROJECTION,
+            events: 0,
+          },
         })
         .sort({ startedAt: -1 })
         .skip(offset)
         .limit(limit)
         .toArray(),
+
       collection.countDocuments(filter),
     ]);
 
@@ -90,7 +106,7 @@ export function runsRoutes(
       .collection("runs")
       .findOne(
         { id: req.params.id, ownerId: req.userId },
-        { projection: { "profile.arithmeticMode": 0 } },
+        { projection: PUBLIC_RUN_PROJECTION },
       );
 
     if (!run) {
