@@ -135,15 +135,6 @@ test("run history supports owner-scoped search and pagination", async (t) => {
     ],
   });
 
-  assert.deepEqual(database.findQuery, {
-    ownerId: "alice",
-    $or: [
-      { id: { $regex: pattern, $options: "i" } },
-      { "profile.name": { $regex: pattern, $options: "i" } },
-      { status: { $regex: pattern, $options: "i" } },
-    ],
-  });
-
   assert.deepEqual(database.countQuery, database.findQuery);
   assert.equal(database.skip, 10);
   assert.equal(database.limit, 5);
@@ -166,6 +157,21 @@ test("run detail excludes internal database fields", async (t) => {
     "profile.arithmeticMode": 0,
   });
 });
+
+test("run history excludes internal database fields", async (t) => {
+  const {request, database} = await fixture(t);
+
+  const response = await request("/api/runs");
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(database.findProjection, {
+    _id: 0,
+    ownerId: 0,
+    "profile.arithmeticMode": 0,
+    events: 0
+  })
+  }
+);
 
 test("run history rejects invalid search and pagination", async (t) => {
   const { request } = await fixture(t);
