@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { authClient, type User } from "./auth-client";
+import { RunHistory } from "./RunHistory";
 
 export function AccountMenu({
   user,
@@ -14,6 +15,7 @@ export function AccountMenu({
   const [copied, setCopied] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     if (!copied) {
@@ -121,6 +123,21 @@ export function AccountMenu({
           </svg>
           Settings
         </button>
+        {user.emailVerified && (
+          <button
+            type="button"
+            onClick={() => {
+              popover.current?.hidePopover();
+              setHistoryOpen(true);
+            }}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="8" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            History
+          </button>
+        )}
         {error && (
           <p className="form-error" role="alert">
             {error}
@@ -133,6 +150,9 @@ export function AccountMenu({
           {busy ? "Logging out…" : "Log out"}
         </button>
       </div>
+      {user.emailVerified && historyOpen && (
+        <RunHistory close={() => setHistoryOpen(false)} />
+      )}
     </>
   );
 }

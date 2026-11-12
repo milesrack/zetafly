@@ -64,6 +64,7 @@ export function App() {
           <div className="account-action">
             {user ? (
               <AccountMenu
+                key={user.id}
                 user={user}
                 verify={() => setAccountOpen(true)}
                 settings={() => setSessionOpen(true)}
