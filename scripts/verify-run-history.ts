@@ -226,7 +226,7 @@ try {
 
   //pagination tests
   async function testPage(page: number, ids: string[]) {
-    const response = await alice.client.send(`/api/runs?page=${page}&limit=2`,);
+    const response = await alice.client.send(`/api/runs?page=${page}&limit=2`);
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("x-total-count"), "6");
@@ -235,7 +235,10 @@ try {
 
     const responseRuns = (await response.json()) as { id: string }[];
 
-    assert.deepEqual(responseRuns.map((run) => run.id), ids,);
+    assert.deepEqual(
+      responseRuns.map((run) => run.id),
+      ids,
+    );
   }
 
   await testPage(1, ["alice-newest", "alice-second"]);
@@ -246,13 +249,18 @@ try {
 
   //search behavior tests
   async function testSearch(query: string, ids: string[]) {
-    const response = await alice.client.send(`api/runs?q=${encodeURIComponent(query)}`,);
+    const response = await alice.client.send(
+      `api/runs?q=${encodeURIComponent(query)}`,
+    );
 
     assert.equal(response.status, 200);
 
-    const responseRuns = (await response.json()) as {id: string}[];
+    const responseRuns = (await response.json()) as { id: string }[];
 
-    assert.deepEqual(responseRuns.map((run) => run.id), ids,);
+    assert.deepEqual(
+      responseRuns.map((run) => run.id),
+      ids,
+    );
   }
 
   await testSearch("alice-error", ["alice-error"]);
