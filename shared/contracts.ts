@@ -32,6 +32,15 @@ export type RunSummary = {
   accepted: number;
 };
 
+export type RunRecord = RunSummary & {
+  finishedAt: string;
+  attempts: number;
+  settings: Settings;
+  error?: string | null;
+  profile?: RunSummary["profile"] & { id?: string; sha256?: string | null };
+  events: RunEvent[];
+};
+
 export type PhysicalKey = {
   code: string;
   label: string;

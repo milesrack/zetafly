@@ -472,16 +472,25 @@ select {
   padding: 0;
 }
 .run-history-list li {
+  border-bottom: 1px solid #eeeff2;
+}
+.run-history button.run-history-open {
   display: grid;
+  width: 100%;
+  text-align: left;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 4px 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #eeeff2;
+  border: 0;
+  border-radius: 0;
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+.run-history button.run-history-open:hover {
+  background: #f0f3f7;
+}
 .run-history-list time,
-.run-history-list li > span {
+.run-history-open > span {
   color: var(--muted-text);
 }
 .run-history-pages {
@@ -492,12 +501,55 @@ select {
   margin-top: 16px;
   font-size: 12px;
 }
-.run-history button:not(.icon-button) {
+.run-history button:not(.icon-button),
+.run-history .run-export {
   min-height: 32px;
   padding: 4px 8px;
   border: 1px solid #dfe2e8;
   border-radius: var(--control-radius);
   background: white;
+}
+.run-history .run-export {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  font-size: 12px;
+  text-decoration: none;
+}
+.run-details h3 {
+  margin: 18px 0;
+  font-size: 15px;
+}
+.run-details h4 {
+  margin: 20px 0 10px;
+  font-size: 13px;
+}
+.run-details dl {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.run-details dt {
+  color: var(--muted-text);
+}
+.run-details dd {
+  margin: 0 0 8px;
+}
+.run-attempts {
+  overflow-x: auto;
+  max-height: 280px;
+}
+.run-attempts table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.run-attempts th,
+.run-attempts td {
+  padding: 8px;
+  border-bottom: 1px solid #eeeff2;
+  text-align: left;
 }
 .account-content {
   padding: 24px;

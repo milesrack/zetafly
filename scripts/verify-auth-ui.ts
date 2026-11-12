@@ -88,11 +88,59 @@ for (const engine of [chromium, webkit]) {
   const browser = await engine.launch();
 
   try {
-    const historyPage = await browser.newPage({
+    const historyContext = await browser.newContext({
       viewport: { width: 390, height: 720 },
+      acceptDownloads: true,
     });
+    const historyPage = await historyContext.newPage();
     await mock(historyPage, true);
-    await historyPage.route("**/api/runs?*", async (route) => {
+    const savedRun = {
+      id: "run-1",
+      startedAt: "2026-11-09T00:00:00.000Z",
+      finishedAt: "2026-11-09T00:02:00.000Z",
+      profile: {
+        id: "published",
+        name: "Custom weights",
+        sha256: "test-model-hash",
+      },
+      status: "completed",
+      accepted: 1,
+      attempts: 2,
+      settings: DEFAULTS,
+      events: [
+        {
+          kind: "attempt",
+          a: 2,
+          b: 3,
+          operation: "+",
+          submitted: 4,
+          accepted: false,
+          attempts: 1,
+          score: 0,
+          time: 1794182401000,
+        },
+        {
+          kind: "attempt",
+          a: 2,
+          b: 3,
+          operation: "+",
+          submitted: 5,
+          accepted: true,
+          attempts: 2,
+          score: 1,
+          time: 1794182402000,
+        },
+      ],
+    };
+    let failDetails = true;
+    await historyPage.route("**/api/runs/run-1", async (route) => {
+      if (failDetails) {
+        await route.fulfill({ status: 500, json: { error: "Unavailable" } });
+        return;
+      }
+      await route.fulfill({ json: savedRun });
+    });
+    await historyPage.route(/\/api\/runs\?/, async (route) => {
       const params = new URL(route.request().url()).searchParams;
       const page = params.get("page");
       const query = params.get("q");
@@ -148,9 +196,50 @@ for (const engine of [chromium, webkit]) {
     await history.getByRole("searchbox", { name: "Search runs" }).fill("Cust");
     await searchRequest;
     await history.getByText("Custom weights", { exact: true }).waitFor();
+    await history.getByRole("button", { name: "View run run-1" }).click();
+    await history.getByRole("alert").waitFor();
+    failDetails = false;
+    await history.getByRole("button", { name: "Retry", exact: true }).click();
+    await history.getByRole("heading", { name: "Attempt history" }).waitFor();
+    assert.equal(await history.getByRole("row").count(), 3);
+    await history
+      .getByRole("cell", { name: "Rejected", exact: true })
+      .waitFor();
+    await history
+      .getByRole("cell", { name: "Accepted", exact: true })
+      .waitFor();
+    await history.getByText("test-model-hash", { exact: true }).waitFor();
+    await accessibility(historyPage);
+
+    const exportLink = history.getByRole("link", { name: "Export JSON" });
+    await exportLink.waitFor();
+    const exportedRecord = await exportLink.evaluate(async (link) => {
+      const response = await fetch((link as HTMLAnchorElement).href);
+      return response.json();
+    });
+    assert.deepEqual(exportedRecord, savedRun);
+
+    const downloadingRun = historyPage.waitForEvent("download");
+    await exportLink.click();
+    const runDownload = await downloadingRun;
+    assert.equal(runDownload.suggestedFilename(), "zetafly-run-run-1.json");
+
+    await history.getByRole("button", { name: "Back to history" }).click();
+    assert.equal(
+      await history
+        .getByRole("searchbox", { name: "Search runs" })
+        .inputValue(),
+      "Cust",
+    );
+    assert.ok(
+      await history
+        .getByRole("button", { name: "View run run-1" })
+        .evaluate((button) => button === document.activeElement),
+    );
     await history.getByRole("button", { name: "Close history" }).click();
     await history.waitFor({ state: "hidden" });
     await historyPage.close();
+    await historyContext.close();
 
     const failurePage = await browser.newPage();
     failurePage.setDefaultTimeout(30000);

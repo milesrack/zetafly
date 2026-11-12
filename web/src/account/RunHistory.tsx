@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { RunSummary } from "../../../shared/contracts.ts";
 import { apiFetch } from "../api";
 import { outsideDialog } from "../components/dialog";
+import { RunDetails } from "./RunDetails";
 
 const pageSize = 10;
 const runDate = new Intl.DateTimeFormat(undefined, {
@@ -11,11 +12,19 @@ const runDate = new Intl.DateTimeFormat(undefined, {
 
 export function RunHistory({ close }: { close: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const selectedButton = useRef<HTMLButtonElement | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState({ query: "", page: 1 });
   const [result, setResult] = useState<
     { runs: RunSummary[]; total: number } | "error" | null
   >(null);
   const { query, page } = search;
+
+  useEffect(() => {
+    if (!selectedId) {
+      selectedButton.current?.focus();
+    }
+  }, [selectedId]);
 
   useEffect(() => {
     const modal = dialog.current;
@@ -103,70 +112,91 @@ export function RunHistory({ close }: { close: () => void }) {
           </svg>
         </button>
       </div>
-      <div className="account-content">
-        <label>
-          Search runs
-          <input
-            type="search"
-            maxLength={100}
-            placeholder="Run ID, profile, or status"
-            value={query}
-            onChange={(event) => load(event.target.value, 1)}
-          />
-        </label>
-        {result === "error" ? (
-          <>
-            <p className="form-error" role="alert">
-              Could not load runs.
+      {selectedId && (
+        <RunDetails
+          key={selectedId}
+          id={selectedId}
+          back={() => setSelectedId(null)}
+        />
+      )}
+      <div hidden={selectedId !== null}>
+        <div className="account-content">
+          <label>
+            Search runs
+            <input
+              type="search"
+              maxLength={100}
+              placeholder="Run ID, profile, or status"
+              value={query}
+              onChange={(event) => load(event.target.value, 1)}
+            />
+          </label>
+          {result === "error" ? (
+            <>
+              <p className="form-error" role="alert">
+                Could not load runs.
+              </p>
+              <button type="button" onClick={() => load(query, page)}>
+                Retry
+              </button>
+            </>
+          ) : !result ? (
+            <p role="status">Loading runs…</p>
+          ) : result.runs.length === 0 ? (
+            <p role="status">
+              {query.trim()
+                ? "No runs match your search."
+                : "No previous runs."}
             </p>
-            <button type="button" onClick={() => load(query, page)}>
-              Retry
-            </button>
-          </>
-        ) : !result ? (
-          <p role="status">Loading runs…</p>
-        ) : result.runs.length === 0 ? (
-          <p role="status">
-            {query.trim() ? "No runs match your search." : "No previous runs."}
-          </p>
-        ) : (
-          <ul className="run-history-list">
-            {result.runs.map((run) => (
-              <li key={run.id}>
-                <strong>{run.profile?.name || "Unknown profile"}</strong>
-                <time dateTime={run.startedAt}>
-                  {runDate.format(new Date(run.startedAt))}
-                </time>
-                <span>{run.status}</span>
-                <span>Score: {run.accepted}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        {(page > 1 || pages > 1) && (
-          <nav
-            className="run-history-pages"
-            aria-label="Run history pagination"
-          >
-            <button
-              type="button"
-              disabled={page === 1}
-              onClick={() => load(query, page - 1)}
+          ) : (
+            <ul className="run-history-list">
+              {result.runs.map((run) => (
+                <li key={run.id}>
+                  <button
+                    type="button"
+                    className="run-history-open"
+                    aria-label={`View run ${run.id}`}
+                    onClick={(event) => {
+                      selectedButton.current = event.currentTarget;
+                      setSelectedId(run.id);
+                    }}
+                  >
+                    <strong>{run.profile?.name || "Unknown profile"}</strong>
+                    <time dateTime={run.startedAt}>
+                      {runDate.format(new Date(run.startedAt))}
+                    </time>
+                    <span>{run.status}</span>
+                    <span>Score: {run.accepted}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {(page > 1 || pages > 1) && (
+            <nav
+              className="run-history-pages"
+              aria-label="Run history pagination"
             >
-              Previous
-            </button>
-            <span role="status">
-              {pages ? `Page ${page} of ${pages}` : `Page ${page}`}
-            </span>
-            <button
-              type="button"
-              disabled={page >= pages}
-              onClick={() => load(query, page + 1)}
-            >
-              Next
-            </button>
-          </nav>
-        )}
+              <button
+                type="button"
+                disabled={page === 1}
+                onClick={() => load(query, page - 1)}
+              >
+                Previous
+              </button>
+              <span role="status">
+                {pages ? `Page ${page} of ${pages}` : `Page ${page}`}
+              </span>
+              <button
+                type="button"
+                disabled={page >= pages}
+                onClick={() => load(query, page + 1)}
+              >
+                Next
+              </button>
+            </nav>
+          )}
+        </div>
       </div>
     </dialog>
   );
