@@ -159,7 +159,7 @@ test("run detail excludes internal database fields", async (t) => {
 });
 
 test("run history excludes internal database fields", async (t) => {
-  const {request, database} = await fixture(t);
+  const { request, database } = await fixture(t);
 
   const response = await request("/api/runs");
 
@@ -168,10 +168,9 @@ test("run history excludes internal database fields", async (t) => {
     _id: 0,
     ownerId: 0,
     "profile.arithmeticMode": 0,
-    events: 0
-  })
-  }
-);
+    events: 0,
+  });
+});
 
 test("run history rejects invalid search and pagination", async (t) => {
   const { request } = await fixture(t);
