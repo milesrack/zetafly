@@ -224,6 +224,45 @@ try {
       ),
     ]);
 
+  //pagination tests
+  async function testPage(page: number, ids: string[]) {
+    const response = await alice.client.send(`/api/runs?page=${page}&limit=2`,);
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("x-total-count"), "6");
+    assert.equal(response.headers.get("x-page"), String(page));
+    assert.equal(response.headers.get("x-page-size"), "2");
+
+    const responseRuns = (await response.json()) as { id: string }[];
+
+    assert.deepEqual(responseRuns.map((run) => run.id), ids,);
+  }
+
+  await testPage(1, ["alice-newest", "alice-second"]);
+
+  await testPage(2, ["alice-literal.*", "alice-error"]);
+
+  await testPage(3, ["alice-older", "alice-oldest"]);
+
+  //search behavior tests
+  async function testSearch(query: string, ids: string[]) {
+    const response = await alice.client.send(`api/runs?q=${encodeURIComponent(query)}`,);
+
+    assert.equal(response.status, 200);
+
+    const responseRuns = (await response.json()) as {id: string}[];
+
+    assert.deepEqual(responseRuns.map((run) => run.id), ids,);
+  }
+
+  await testSearch("alice-error", ["alice-error"]);
+
+  await testSearch("Training", ["alice-newest", "alice-second"]);
+
+  await testSearch("stopped", ["alice-literal.*", "alice-oldest"]);
+
+  await testSearch(".*", ["alice-literal.*"]);
+
   console.log("Run history test data created");
 } finally {
   await sessions.close();
