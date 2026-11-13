@@ -27,8 +27,9 @@ ENV NODE_ENV=production HOST=0.0.0.0 PLAYWRIGHT_BROWSERS_PATH=/opt/browsers
 WORKDIR /app
 COPY package*.json ./
 COPY web/package*.json ./web/
-RUN --mount=type=cache,id=zetafly-npm,target=/root/.npm,sharing=locked npm ci --omit=dev --no-audit
-RUN --mount=type=cache,id=zetafly-npm,target=/root/.npm,sharing=locked npx --no-install playwright install --with-deps chromium
+RUN --mount=type=cache,id=zetafly-npm,target=/root/.npm,sharing=locked npm ci --omit=dev --workspaces=false --no-audit
+RUN --mount=type=cache,id=zetafly-npm,target=/root/.npm,sharing=locked npx --no-install playwright install --with-deps --only-shell chromium \
+    && rm -rf /var/lib/apt/lists/*
 COPY shared ./shared
 COPY server ./server
 COPY models ./models
