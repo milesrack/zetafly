@@ -90,12 +90,6 @@ jobs:
           }
           JS
       - run: npm run test:integration
-      - name: Sync private SwaggerHub definition
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SWAGGERHUB_OWNER != ''
-        env:
-          SWAGGERHUB_OWNER: ${{ vars.SWAGGERHUB_OWNER }}
-          SWAGGERHUB_API_KEY: ${{ secrets.SWAGGERHUB_API_KEY }}
-        run: npm run api:sync
       - name: Container diagnostics
         if: failure()
         run: |
