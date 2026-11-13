@@ -18,7 +18,7 @@ COPY server ./server
 COPY scripts ./scripts
 COPY tests ./tests
 COPY models ./models
-COPY research/*.ts ./research/
+COPY research ./research
 COPY web ./web
 RUN npm run build
 
