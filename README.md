@@ -146,10 +146,9 @@ cd "$release" &&
 ## Training
 
 ```sh
-uv venv --python 3.12 output/venv
-uv pip install --python output/venv/bin/python -r research/connectome-arithmetic/requirements.txt
 npm run model:fetch
-output/venv/bin/python research/connectome-arithmetic/train.py --output output/model --seconds 120
+node research/connectome-arithmetic/train.ts --output output/model --seconds 120
+node research/connectome-arithmetic/audit.ts --model output/model/weights.json --output output/audit
 npm run model:predict -- --model output/model/weights.npz --expression '17*6'
 npm run model:inspect -- output/model/weights.npz
 ```
