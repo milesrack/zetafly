@@ -7,6 +7,8 @@ import { readConfig } from "../server/config.ts";
 async function fixture(t: TestContext, authenticated = true) {
   const database = {
     findQuery: undefined as unknown,
+    findProjection: undefined as unknown,
+    findOneProjection: undefined as unknown,
     countQuery: undefined as unknown,
     skip: -1,
     limit: -1,
@@ -17,14 +19,21 @@ async function fixture(t: TestContext, authenticated = true) {
     db: {
       command: async () => ({ ok: 1 }),
       collection: () => ({
-        findOne: async () => null,
+        findOne: async (
+          _query: unknown,
+          options?: { projection?: unknown },
+        ) => {
+          database.findOneProjection = options?.projection;
+          return null;
+        },
         countDocuments: async (query: unknown) => {
           database.countQuery = query;
           return 0;
         },
 
-        find: (query: unknown) => {
+        find: (query: unknown, options?: { projection?: unknown }) => {
           database.findQuery = query;
+          database.findProjection = options?.projection;
 
           return {
             sort: () => ({
@@ -133,6 +142,34 @@ test("run history supports owner-scoped search and pagination", async (t) => {
   assert.equal(response.headers.get("x-page"), "3");
   assert.equal(response.headers.get("x-page-size"), "5");
   assert.equal(response.headers.get("x-total-count"), "0");
+});
+
+test("run detail excludes internal database fields", async (t) => {
+  const { request, database } = await fixture(t);
+
+  const response = await request("/api/runs/test-run");
+
+  assert.equal(response.status, 404);
+
+  assert.deepEqual(database.findOneProjection, {
+    _id: 0,
+    ownerId: 0,
+    "profile.arithmeticMode": 0,
+  });
+});
+
+test("run history excludes internal database fields", async (t) => {
+  const { request, database } = await fixture(t);
+
+  const response = await request("/api/runs");
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(database.findProjection, {
+    _id: 0,
+    ownerId: 0,
+    "profile.arithmeticMode": 0,
+    events: 0,
+  });
 });
 
 test("run history rejects invalid search and pagination", async (t) => {

@@ -1761,9 +1761,14 @@ components:
       description: Recorded motor, browser input, submitted answer, or model prediction. Fields depend on kind.
     RunSummary:
       type: object
+      not:
+        anyOf:
+          - required:
+              - _id
+          - required:
+              - ownerId
       required:
         - id
-        - ownerId
         - startedAt
         - finishedAt
         - status
@@ -1772,11 +1777,7 @@ components:
         - protocol
         - settings
       properties:
-        _id:
-          type: string
         id:
-          type: string
-        ownerId:
           type: string
         profile:
           type: object
