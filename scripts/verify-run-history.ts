@@ -250,7 +250,7 @@ try {
   //search behavior tests
   async function testSearch(query: string, ids: string[]) {
     const response = await alice.client.send(
-      `api/runs?q=${encodeURIComponent(query)}`,
+      `/api/runs?q=${encodeURIComponent(query)}`,
     );
 
     assert.equal(response.status, 200);
