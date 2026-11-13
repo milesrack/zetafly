@@ -1,0 +1,13 @@
+[Unit]
+Description=Check Zetafly storage and remove unused application images
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+StateDirectory=zetafly-storage
+StateDirectoryMode=0700
+EnvironmentFile=/etc/zetafly-storage/alert.conf
+ExecStart=-/usr/local/sbin/zetafly-disk-alert
+ExecStart=/usr/local/sbin/zetafly-prune-images ${ZETAFLY_IMAGE_REPOSITORY}
+TimeoutStartSec=10min

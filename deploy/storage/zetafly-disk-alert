@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+base=/var/www/zetafly
+state=/var/lib/zetafly-storage/alert-active
+threshold=80
+case "${1:-}" in
+  '') test_email=false ;;
+  --test-email) test_email=true ;;
+  *) echo "Usage: zetafly-disk-alert [--test-email]" >&2; exit 2 ;;
+esac
+
+docker_root=$(docker info --format '{{.DockerRootDir}}')
+usage=$(df -h --output=pcent,ipcent,avail,target -- / "$base" "$docker_root")
+breach=false
+lines=()
+mounts=()
+while read -r disk inodes available mount; do
+  [[ $disk =~ ^[0-9]+%$ && $inodes =~ ^[0-9]+%$ && -n $mount ]] || exit 1
+  if [[ ${#mounts[@]} -gt 0 ]] && printf '%s\n' "${mounts[@]}" | grep -Fxq -- "$mount"; then
+    continue
+  fi
+  mounts+=("$mount")
+  lines+=("Filesystem $mount: $disk disk used, $available available, and $inodes of inodes used.")
+  if (( ${disk%%%} >= threshold || ${inodes%%%} >= threshold )); then
+    breach=true
+  fi
+done <<< "${usage#*$'\n'}"
+
+if ! $test_email; then
+  if ! $breach; then
+    rm -f -- "$state"
+    exit 0
+  fi
+  if [[ -e $state ]]; then
+    echo "Disk alert already sent for the current threshold breach."
+    exit 0
+  fi
+fi
+
+title="Disk capacity alert"
+intro="The Zetafly production Linode has reached 80% disk or inode usage."
+if $test_email; then
+  title="Test disk-capacity alert"
+  intro="This is a test of disk alerts for the Zetafly production Linode."
+fi
+
+dotenv_value() {
+  local value
+  value=$(sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$base/shared/.env" | tail -n 1)
+  value=${value%"${value##*[![:space:]]}"}
+  case "$value" in
+    \"*\") value=${value:1:${#value}-2} ;;
+    \'*\') value=${value:1:${#value}-2} ;;
+  esac
+  [[ -n $value ]] || return 1
+  printf '%s' "$value"
+}
+
+sender=$(dotenv_value EMAIL_FROM)
+key=$(dotenv_value RESEND_API_KEY)
+recipient=${ZETAFLY_ALERT_TO:?Set ZETAFLY_ALERT_TO}
+url=${ZETAFLY_STATUS_URL:-https://zetafly.poosd.dev/api/health}
+payload=$(jq -n --arg from "$sender" --arg to "$recipient" --arg title "$title" \
+  --arg intro "$intro" --arg url "$url" --rawfile template /etc/zetafly-storage/email.html \
+  --args '
+    ($ARGS.positional | map("<p style=\"margin:0 0 24px;font-size:15px;line-height:1.6\">" + (@html) + "</p>") | join("")) as $details
+    | {
+        from: $from,
+        to: [$to],
+        subject: ("Zetafly " + ($title | ascii_downcase)),
+        text: ([$title, $intro] + $ARGS.positional + ["Check Zetafly status: " + $url] | join("\n\n")),
+        html: ($template | gsub("\\{\\{(?<key>title|instruction|details|escaped|action)\\}\\}";
+          {title: $title, instruction: $intro, details: $details,
+           escaped: ($url | @html), action: "Check Zetafly status"}[.key]))
+      }
+  ' "${lines[@]}")
+
+response=$(printf 'Authorization: Bearer %s\n' "$key" |
+  curl --fail --silent --show-error --max-time 15 \
+    --header @- --header 'Content-Type: application/json' \
+    --user-agent 'Zetafly-Disk-Alert/1.0' --data-binary "$payload" \
+    https://api.resend.com/emails)
+message_id=$(jq -er '.id | strings | select(length > 0)' <<< "$response")
+if ! $test_email; then
+  touch -- "$state"
+fi
+printf 'Resend accepted disk alert (%s).\n' "$message_id"
