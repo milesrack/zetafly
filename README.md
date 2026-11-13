@@ -157,7 +157,7 @@ Upload `output/model/weights.npz` in **Settings → Weights**.
 
 ## API
 
-Import [openapi.yaml](openapi.yaml) into SwaggerHub.
+View the [ZetaFly API documentation on SwaggerHub](https://app.swaggerhub.com/apis-docs/poosd-56a/zetafly).
 
 ## Credits
 
