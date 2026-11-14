@@ -59,9 +59,7 @@ paths:
       parameters:
         - name: q
           in: query
-          description: >-
-            Case-insensitive substring, trimmed and matched literally. Omit to list all available
-            checkpoints.
+          description: Trimmed, literal substring (case-insensitive). Omit to list all checkpoints.
           schema:
             type: string
             maxLength: 100
@@ -142,7 +140,7 @@ paths:
             schema:
               type: string
               format: binary
-              description: Sequence-model NPZ checkpoint, at most 64 MiB. Up to five uploads per account.
+              description: "Connectome-compatible NPZ. Maximum: 64 MiB per file, five stored checkpoints per account."
       tags:
         - Weights
   /api/public-config:
@@ -171,11 +169,17 @@ paths:
     post:
       operationId: grantAccess
       summary: Set the API access cookie
+      description: Requires a session and verified email.
       security:
         - sessionCookie: []
       responses:
         "200":
-          description: Success
+          description: Access cookie issued
+          headers:
+            Set-Cookie:
+              description: zetafly_access (Max-Age=300)
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -428,7 +432,7 @@ paths:
         - bearerAuth: []
         - accessCookie: []
       requestBody:
-        required: true
+        description: Omit to use default settings.
         content:
           application/json:
             schema:
@@ -481,10 +485,8 @@ paths:
       operationId: deleteOwnAccount
       summary: Permanently delete the authenticated account and its data
       description: >-
-        Requires the current password, even for a fresh session. Stops the owner's
-        active run, disconnects all of their live sessions, and removes their runs,
-        preferences, uploaded weight files, credentials and sessions. Waits for
-        outstanding account writes before cleanup. On failure, retry while signed in.
+        Requires the current password. Stops active runs, disconnects live sessions,
+        and waits for pending writes before deleting account data. Retry failures while signed in.
       tags:
         - Authentication
       security:
@@ -1968,8 +1970,9 @@ components:
           pattern: ^(published|[a-f0-9-]{36})$
       additionalProperties: false
       description: >-
-        At least one operation must be enabled. Each minimum must not exceed its maximum; enabled
-        operations must remain within safe integer precision.
+        Enable at least one operation. Keep minimums at or below maximums and
+        enabled operations within safe integer precision.
+        With division enabled, the left factor range must include a non-zero value.
     AuthError:
       type: object
       properties:

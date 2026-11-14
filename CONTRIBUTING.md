@@ -13,6 +13,7 @@ git switch -c bugfix/short-description
 Use `feature/`, `bugfix/`, `refactor/`, `docs/`, or `chore/` as appropriate. Follow the existing TypeScript code style, and keep each pull request focused on one change.
 
 ```sh
+npm run model:fetch
 npm run format
 npm run check
 ```
