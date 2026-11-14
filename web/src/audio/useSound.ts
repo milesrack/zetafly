@@ -212,6 +212,11 @@ export function useSound() {
         sound.activate();
       }
     };
+    const activatePointer = (event: PointerEvent) => {
+      if ((event.pointerType === "mouse") === (event.type === "pointerdown")) {
+        activate(event);
+      }
+    };
     const visibility = () => {
       if (!document.hidden) {
         sound.activate();
@@ -220,12 +225,14 @@ export function useSound() {
       sound.sync();
     };
 
-    document.addEventListener("pointerdown", activate);
+    document.addEventListener("pointerdown", activatePointer);
+    document.addEventListener("pointerup", activatePointer);
     document.addEventListener("keydown", activate);
     document.addEventListener("visibilitychange", visibility);
 
     return () => {
-      document.removeEventListener("pointerdown", activate);
+      document.removeEventListener("pointerdown", activatePointer);
+      document.removeEventListener("pointerup", activatePointer);
       document.removeEventListener("keydown", activate);
       document.removeEventListener("visibilitychange", visibility);
       sound.dispose();
