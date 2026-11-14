@@ -65,20 +65,7 @@ jobs:
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
-        run: |
-          test -n "$DEPLOY_SSH_KEY"
-          test -n "$DEPLOY_KNOWN_HOSTS"
-          install -d -m 700 ~/.ssh
-          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          cat > ~/.ssh/config <<'SSH'
-          Host *
-            BatchMode yes
-            StrictHostKeyChecking yes
-            IdentitiesOnly yes
-            ServerAliveInterval 30
-          SSH
+        run: bash scripts/configure-deploy-ssh.sh
 
       - name: Upload Compose files
         run: |
@@ -91,29 +78,4 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REGISTRY_USER: ${{ github.repository_owner }}
           IMAGE: ${{ steps.release.outputs.image }}
-        run: |
-          [[ "$IMAGE" =~ ^ghcr.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$ ]]
-          [[ "$REGISTRY_USER" =~ ^[a-zA-Z0-9-]+$ ]]
-          {
-            printf '%s\n' "$GHCR_TOKEN"
-            cat <<'REMOTE'
-          set -euo pipefail
-          release=/var/www/zetafly/releases/$1
-          cd "$release"
-          test -r /var/www/zetafly/shared/.env
-          ln -sfn /var/www/zetafly/shared/.env .env
-          printf 'ZETAFLY_IMAGE=%s\n' "$2" > image.env
-          export DOCKER_CONFIG
-          DOCKER_CONFIG=$(mktemp -d)
-          trap 'rm -rf "$DOCKER_CONFIG"' EXIT
-          printf '%s' "$registry_token" | docker login ghcr.io --username "$3" --password-stdin >/dev/null
-          unset registry_token
-          compose=(docker compose -p zetafly --env-file .env --env-file image.env -f compose.yaml -f compose.production.yaml)
-          "${compose[@]}" pull
-          "${compose[@]}" up -d --no-build --wait --wait-timeout 180
-          curl --fail --silent --show-error http://127.0.0.1:3000/api/health >/dev/null
-          curl --fail --silent --show-error --retry 5 --retry-delay 3 https://zetafly.poosd.dev/api/health >/dev/null
-          ln -sfn "$release" /var/www/zetafly/current
-          REMOTE
-          } | ssh deploy@"$DEPLOY_HOST" \
-            "IFS= read -r registry_token; export registry_token; exec bash -se -- '$RELEASE_SHA' '$IMAGE' '$REGISTRY_USER'"
+        run: bash scripts/deploy.sh

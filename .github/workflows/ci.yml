@@ -22,6 +22,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Check shell syntax
+        run: for script in scripts/*.sh; do bash -n "$script"; done
       - run: node scripts/setup-env.ts
       - run: docker compose -f compose.yaml -f compose.production.yaml config --quiet
         env:
@@ -31,64 +33,7 @@ jobs:
       - run: npm run test:simulator
       - run: docker compose up --build -d --wait
       - name: Database and model runtime
-        run: |
-          docker compose exec -T app node --input-type=module <<'JS'
-          import assert from "node:assert/strict";
-          import { randomUUID } from "node:crypto";
-          import { MongoClient } from "mongodb";
-          import { prepareDatabase } from "./server/database.ts";
-          import { NeuralWorker } from "./server/neural-worker.ts";
-          const client = await new MongoClient(process.env.MONGODB_URI).connect();
-          const db = client.db(`zetafly_migration_${randomUUID().replaceAll("-", "")}`);
-          try {
-            await db.collection("sessions").insertOne({
-              id: "legacy", ownerId: "alice", startedAt: new Date(0), events: [],
-            });
-            await db.collection("sessions").createIndex({ id: 1 }, { unique: true });
-            const original = await db.collection("sessions").findOne({ id: "legacy" });
-            await db.collection("session").insertOne({ id: "auth" });
-            await prepareDatabase(db);
-            assert.deepEqual(await db.collection("runs").findOne({ id: "legacy" }), original);
-            assert.equal(await db.listCollections({ name: "sessions" }).hasNext(), false);
-            assert.equal(await db.collection("session").countDocuments({}), 1);
-            await prepareDatabase(db);
-            assert.equal(await db.collection("runs").countDocuments({}), 1);
-            assert.ok((await db.collection("runs").indexes()).some(index => index.unique && index.key.id === 1));
-            await db.collection("sessions").insertOne({ id: "collision" });
-            await assert.rejects(prepareDatabase(db));
-            assert.equal(await db.collection("runs").countDocuments({}), 1);
-            assert.equal(await db.collection("sessions").countDocuments({}), 1);
-          } finally {
-            await db.dropDatabase();
-            await client.close();
-          }
-          const worker = new NeuralWorker();
-          try {
-            for (const [a, b, operation, answer] of [
-              [2, 3, "+", "5"], [5, 2, "-", "3"],
-              [2, 3, "*", "6"], [6, 2, "/", "3"],
-            ]) {
-              let first;
-              let prediction;
-              const rejected = [];
-              for (let attempt = 0; attempt < 3; attempt++) {
-                prediction = await worker.predict(a, b, 42, operation, packet => {
-                  first ??= packet.neural.rates?.[0];
-                }, rejected);
-                if (prediction.answerText === answer) break;
-                rejected.push(prediction.answerText);
-              }
-              assert.equal(prediction.answerText, answer);
-              assert.ok(prediction.neural?.rates?.length);
-              assert.ok(first);
-              assert.ok(prediction.neural.rates.some(sample => sample[0] === first[0] && sample[1] === first[1]));
-            }
-            await worker.close();
-            assert.equal((await worker.predict(2, 3, 42, "+")).answerText, "5");
-          } finally {
-            await worker.close();
-          }
-          JS
+        run: docker compose exec -T -w /app/server app node --input-type=module-typescript < scripts/verify-runtime.ts
       - run: npm run test:integration
       - name: Sync private SwaggerHub definition
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SWAGGERHUB_OWNER != ''
@@ -125,19 +70,7 @@ jobs:
       - name: Browser checks
         env:
           DEBUG: pw:api,pw:browser
-        run: |
-          node --input-type=module > /tmp/zetafly-ui.log 2>&1 <<'JS' &
-          import express from "express";
-          import { securityHeaders } from "./server/security.ts";
-          const app = express();
-          app.use(securityHeaders(false));
-          app.use(express.static("web/dist"));
-          app.listen(3000, "127.0.0.1");
-          JS
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          curl --fail --silent --show-error --retry 20 --retry-connrefused --retry-delay 1 http://127.0.0.1:3000/ >/dev/null
-          node scripts/verify-${{ matrix.check }}.ts
+        run: bash scripts/check-ui.sh ${{ matrix.check }}
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/zetafly-ui.log
