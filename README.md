@@ -115,6 +115,8 @@ On the host, release directories and the current deployment are located at:
 - **Releases:** `/var/www/zetafly/releases`
 - **Current release:** `/var/www/zetafly/current` (symlink to the active release).
 
+[Disk cleanup and email alerts](deploy/storage/README.md)
+
 ### Backup
 
 To back up the MongoDB database and production `.env`:
@@ -131,16 +133,25 @@ backup_dir=$(mktemp -d "$HOME/zetafly-backup.XXXXXXXX") &&
 
 ### Recovery
 
-To roll back, replace `PREVIOUS_RELEASE_SHA` with the previous release directory name:
+Run as `deploy`. Replace `PREVIOUS_RELEASE_SHA` with the release to restore.
 
 ```sh
 release=/var/www/zetafly/releases/PREVIOUS_RELEASE_SHA
-cd "$release" &&
+(
+  set -eu
+  exec 9>>/var/www/zetafly/shared/deploy.lock
+  flock -w 60 9
+  current=$(readlink /var/www/zetafly/current)
+  cd "$release"
   docker compose -p zetafly --env-file .env --env-file image.env \
     -f compose.yaml -f compose.production.yaml \
-    up -d --no-build --wait --wait-timeout 180 &&
-  curl --fail --silent --show-error http://127.0.0.1:3000/api/health &&
+    up -d --no-build --wait --wait-timeout 180
+  curl --fail --silent --show-error http://127.0.0.1:3000/api/health
+  if [ "$current" != "$release" ]; then
+    ln -sfn "$current" /var/www/zetafly/previous
+  fi
   ln -sfn "$release" /var/www/zetafly/current
+)
 ```
 
 ## Training

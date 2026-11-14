@@ -82,7 +82,14 @@ jobs:
 
       - name: Upload Compose files
         run: |
-          ssh deploy@"$DEPLOY_HOST" "mkdir -p /var/www/zetafly/releases/$RELEASE_SHA"
+          ssh deploy@"$DEPLOY_HOST" "bash -se -- '$RELEASE_SHA'" <<'REMOTE'
+          root=/var/www/zetafly
+          if ! mkdir -p "$root/releases/$1"; then
+            df -h "$root"
+            df -i "$root"
+            exit 1
+          fi
+          REMOTE
           rsync -az --no-owner --no-group compose.yaml compose.production.yaml \
             "deploy@$DEPLOY_HOST:/var/www/zetafly/releases/$RELEASE_SHA/"
 
@@ -98,7 +105,10 @@ jobs:
             printf '%s\n' "$GHCR_TOKEN"
             cat <<'REMOTE'
           set -euo pipefail
-          release=/var/www/zetafly/releases/$1
+          root=/var/www/zetafly
+          release=$root/releases/$1
+          exec 9>>"$root/shared/deploy.lock"
+          flock -w 60 9
           cd "$release"
           test -r /var/www/zetafly/shared/.env
           ln -sfn /var/www/zetafly/shared/.env .env
@@ -113,7 +123,10 @@ jobs:
           "${compose[@]}" up -d --no-build --wait --wait-timeout 180
           curl --fail --silent --show-error http://127.0.0.1:3000/api/health >/dev/null
           curl --fail --silent --show-error --retry 5 --retry-delay 3 https://zetafly.poosd.dev/api/health >/dev/null
-          ln -sfn "$release" /var/www/zetafly/current
+          if current=$(readlink "$root/current") && [[ "$current" != "$release" ]]; then
+            ln -sfn "$current" "$root/previous"
+          fi
+          ln -sfn "$release" "$root/current"
           REMOTE
           } | ssh deploy@"$DEPLOY_HOST" \
             "IFS= read -r registry_token; export registry_token; exec bash -se -- '$RELEASE_SHA' '$IMAGE' '$REGISTRY_USER'"
