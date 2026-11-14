@@ -102,6 +102,40 @@ for (const engine of [chromium, webkit]) {
                 : {};
         await route.fulfill({ json });
       });
+      await page.route(/\/api\/runs\?/, async (route) => {
+        const query = new URL(route.request().url()).searchParams.get("q");
+        const runs = query
+          ? []
+          : [
+              {
+                id: "mobile-run",
+                startedAt: "2026-11-09T12:00:00.000Z",
+                profile: { name: "Default" },
+                status: "completed",
+                accepted: 12,
+                attempts: 15,
+              },
+            ];
+        await route.fulfill({
+          headers: { "X-Total-Count": String(runs.length) },
+          json: runs,
+        });
+      });
+      await page.route("**/api/runs/mobile-run", (route) =>
+        route.fulfill({
+          json: {
+            id: "mobile-run",
+            startedAt: "2026-11-09T12:00:00.000Z",
+            finishedAt: "2026-11-09T12:02:00.000Z",
+            profile: { name: "Default" },
+            status: "completed",
+            accepted: 12,
+            attempts: 15,
+            events: [],
+            settings: DEFAULTS,
+          },
+        }),
+      );
       await page.routeWebSocket("**/live", (socket) => {
         const startedAt = Date.now() - 10000;
         socket.send(
@@ -247,6 +281,40 @@ for (const engine of [chromium, webkit]) {
         await capture("delete-account");
         await page.getByRole("button", { name: "Cancel", exact: true }).click();
       }
+      const closeSettings = page.getByRole("button", {
+        name: "Close settings",
+      });
+      if (await closeSettings.isVisible()) {
+        await closeSettings.click();
+      }
+      await page.getByRole("button", { name: "Account", exact: true }).click();
+      await page.getByRole("button", { name: "History", exact: true }).click();
+      const history = page.getByRole("dialog", { name: "Run history" });
+      const run = history.getByRole("button", {
+        description: "Run ID mobile-run",
+      });
+      await run.getByText("12/15").waitFor();
+      await run.getByText("Run mobile-r", { exact: true }).waitFor();
+      await targets(history.getByRole("button"));
+      await fits(page);
+      await capture("history");
+      await run.click();
+      await history
+        .locator(".run-detail-score")
+        .getByText("12/15", { exact: false })
+        .waitFor();
+      await targets(history.getByRole("button"));
+      await targets(history.getByRole("link", { name: "Export JSON" }));
+      await fits(page);
+      await capture("run-details");
+      await history
+        .getByRole("button", { name: "History", exact: true })
+        .click();
+      await run.waitFor();
+      await history
+        .getByRole("searchbox", { name: "Search runs" })
+        .fill("missing");
+      await history.getByText("No runs match your search.").waitFor();
       assert.deepEqual(errors, []);
       await page.close();
       console.log(
