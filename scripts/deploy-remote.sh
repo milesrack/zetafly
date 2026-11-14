@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-release=/var/www/zetafly/releases/$1
+root=/var/www/zetafly
+release=$root/releases/$1
+exec 9>>"$root/shared/deploy.lock"
+flock -w 60 9
 cd "$release"
 test -r /var/www/zetafly/shared/.env
 ln -sfn /var/www/zetafly/shared/.env .env
@@ -15,4 +18,7 @@ compose=(docker compose -p zetafly --env-file .env --env-file image.env -f compo
 "${compose[@]}" up -d --no-build --wait --wait-timeout 180
 curl --fail --silent --show-error http://127.0.0.1:3000/api/health >/dev/null
 curl --fail --silent --show-error --retry 5 --retry-delay 3 https://zetafly.poosd.dev/api/health >/dev/null
-ln -sfn "$release" /var/www/zetafly/current
+if current=$(readlink "$root/current") && [[ "$current" != "$release" ]]; then
+  ln -sfn "$current" "$root/previous"
+fi
+ln -sfn "$release" "$root/current"

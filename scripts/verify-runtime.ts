@@ -2,12 +2,31 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { MongoClient } from "mongodb";
+import { chromium } from "playwright";
 import { prepareDatabase } from "../server/database.ts";
 import { NeuralWorker } from "../server/neural-worker.ts";
 import type { Operation } from "../shared/contracts.ts";
 
 // Also runs through stdin from /app/server, matching the other Docker fixtures.
 process.chdir(fileURLToPath(new URL("..", import.meta.url)));
+
+const browser = await chromium.launch({
+  headless: true,
+  chromiumSandbox: false,
+});
+
+try {
+  const page = await browser.newPage();
+  await page.setContent('<input aria-label="Answer">');
+  await page.getByRole("textbox", { name: "Answer" }).pressSequentially("5");
+  assert.equal(
+    await page.getByRole("textbox", { name: "Answer" }).inputValue(),
+    "5",
+  );
+  assert.ok((await page.screenshot()).length);
+} finally {
+  await browser.close();
+}
 
 const client = await new MongoClient(process.env.MONGODB_URI!).connect();
 const db = client.db(`zetafly_migration_${randomUUID().replaceAll("-", "")}`);

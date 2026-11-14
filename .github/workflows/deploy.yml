@@ -69,7 +69,14 @@ jobs:
 
       - name: Upload Compose files
         run: |
-          ssh deploy@"$DEPLOY_HOST" "mkdir -p /var/www/zetafly/releases/$RELEASE_SHA"
+          ssh deploy@"$DEPLOY_HOST" "bash -se -- '$RELEASE_SHA'" <<'REMOTE'
+          root=/var/www/zetafly
+          if ! mkdir -p "$root/releases/$1"; then
+            df -h "$root"
+            df -i "$root"
+            exit 1
+          fi
+          REMOTE
           rsync -az --no-owner --no-group compose.yaml compose.production.yaml \
             "deploy@$DEPLOY_HOST:/var/www/zetafly/releases/$RELEASE_SHA/"
 

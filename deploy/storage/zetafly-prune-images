@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+base=/var/www/zetafly
+repo=${1:-ghcr.io/milesrack/zetafly/app}
+exec 9>>"$base/shared/deploy.lock"
+flock -w 60 9
+docker_root=$(docker info --format '{{.DockerRootDir}}')
+trap 'df -h -- "$base" "$docker_root"; df -i -- "$base" "$docker_root"' EXIT
+
+release_ref() {
+  sed -n 's/^ZETAFLY_IMAGE=//p' "$1"
+}
+
+images=$(docker image ls --digests --format '{{.Repository}} {{.Tag}} {{.Digest}}' "$repo")
+protected=()
+rollback=$base/previous
+if [[ ! -L $rollback ]]; then
+  rollback=/etc/zetafly-storage/rollback
+fi
+for file in "$base/current/image.env" "$rollback/image.env"; do
+  ref=$(release_ref "$file")
+  [[ $ref == "$repo"@sha256:* && ${ref##*@sha256:} =~ ^[a-f0-9]{64}$ ]]
+  protected+=("$(docker image inspect --format '{{.Id}}' "$ref")")
+done
+
+# The deploy writes image.env before pulling. Keep every recently staged image.
+recent=$(find "$base/releases" -mindepth 2 -maxdepth 2 -name image.env -mmin -120 -print)
+while IFS= read -r file; do
+  [[ -n $file ]] || continue
+  ref=$(release_ref "$file")
+  [[ $ref == "$repo"@sha256:* && ${ref##*@sha256:} =~ ^[a-f0-9]{64}$ ]] || continue
+  if id=$(docker image inspect --format '{{.Id}}' "$ref" 2>/dev/null); then
+    protected+=("$id")
+  fi
+done <<< "$recent"
+
+while read -r repository tag digest; do
+  [[ $repository == "$repo" && $tag == '<none>' && $digest =~ ^sha256:[a-f0-9]{64}$ ]] || continue
+  ref=$repo@$digest
+  id=$(docker image inspect --format '{{.Id}}' "$ref")
+  if printf '%s\n' "${protected[@]}" | grep -Fxq "$id"; then
+    continue
+  fi
+
+  containers=$(docker ps -aq)
+  used=$(xargs -r docker inspect --format '{{.Image}}' <<< "$containers")
+  if grep -Fxq "$id" <<< "$used"; then
+    continue
+  fi
+
+  docker image rm --no-prune "$ref"
+done <<< "$images"

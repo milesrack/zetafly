@@ -32,15 +32,9 @@ jobs:
       - run: npm run check
       - run: npm run test:simulator
       - run: docker compose up --build -d --wait
-      - name: Database and model runtime
+      - name: Browser, database, and model runtime
         run: docker compose exec -T -w /app/server app node --input-type=module-typescript < scripts/verify-runtime.ts
       - run: npm run test:integration
-      - name: Sync private SwaggerHub definition
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SWAGGERHUB_OWNER != ''
-        env:
-          SWAGGERHUB_OWNER: ${{ vars.SWAGGERHUB_OWNER }}
-          SWAGGERHUB_API_KEY: ${{ secrets.SWAGGERHUB_API_KEY }}
-        run: npm run api:sync
       - name: Container diagnostics
         if: failure()
         run: |

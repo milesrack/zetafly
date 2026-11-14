@@ -1,5 +1,10 @@
 services:
   mongo:
+    logging: &production-logging
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
     mem_limit: 384m
     memswap_limit: 768m
     command: [mongod, --wiredTigerCacheSizeGB, "0.25"]
@@ -8,6 +13,7 @@ services:
   mailpit:
     profiles: [development]
   app:
+    logging: *production-logging
     mem_limit: 768m
     memswap_limit: 1536m
     image: ${ZETAFLY_IMAGE:?Set ZETAFLY_IMAGE}
