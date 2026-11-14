@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import test, { type TestContext } from "node:test";
 import { type AppDependencies, createApp } from "../server/app.ts";
 import { readConfig } from "../server/config.ts";
+import { DEFAULT_SETTINGS } from "../shared/settings.ts";
 
 async function fixture(t: TestContext, authenticated = true) {
   const database = {
@@ -60,7 +61,7 @@ async function fixture(t: TestContext, authenticated = true) {
       api: { getSession: async () => null },
     },
     weights: {},
-    sessions: { current: null },
+    sessions: { current: null, start: async () => {} },
     identify: async () =>
       authenticated
         ? { user: { id: "alice" }, session: { id: "session-a" } }
@@ -114,6 +115,17 @@ test("feature routes retain origin rejection, owner filtering and JSON errors", 
   const missing = await request("/api/unknown");
   assert.equal(missing.status, 404);
   assert.deepEqual(await missing.json(), { error: "Unknown endpoint" });
+});
+
+test("starting a run without a request body uses default settings", async (t) => {
+  const { request, dependencies } = await fixture(t);
+  const start = t.mock.method(dependencies.sessions, "start", async () => {}, {
+    times: 1,
+  });
+  const response = await request("/api/start", { method: "POST" });
+
+  assert.equal(response.status, 202);
+  assert.deepEqual(start.mock.calls[0]?.arguments, ["alice", DEFAULT_SETTINGS]);
 });
 
 test("run history supports owner-scoped search and pagination", async (t) => {
