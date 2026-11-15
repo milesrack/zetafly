@@ -1,3 +1,4 @@
+import { Check, Circle } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   MAX_PASSWORD_LENGTH,
@@ -71,7 +72,7 @@ export function PasswordInput({
 
   return (
     <>
-      <div className="password-input">
+      <div className="password-input relative">
         <input
           id={id}
           name={name}
@@ -97,7 +98,7 @@ export function PasswordInput({
         />
         <button
           type="button"
-          className="password-reveal"
+          className="password-reveal absolute top-0 right-0.75 min-w-12 h-full py-0 px-2 bg-transparent border-0 rounded-[var(--control-radius)] text-[11px] text-[#626b79]"
           disabled={disabled}
           aria-label={visible ? "Hide password" : "Show password"}
           aria-pressed={visible}
@@ -108,16 +109,14 @@ export function PasswordInput({
       </div>
       {(creating || tooLong) && (
         <div
-          className="password-feedback"
+          className="password-feedback flex items-center gap-1.5 min-h-5 mt-1.5 text-[11px] text-[var(--muted-text)] invisible"
           id={feedbackId}
           data-visible={focused || Boolean(value)}
           data-met={met}
           data-invalid={tooLong}
           role="status"
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            {met ? <path d="m3 8 3 3 7-7" /> : <circle cx="8" cy="8" r="5" />}
-          </svg>
+          {met ? <Check aria-hidden="true" /> : <Circle aria-hidden="true" />}
           <span>{feedback}</span>
         </div>
       )}

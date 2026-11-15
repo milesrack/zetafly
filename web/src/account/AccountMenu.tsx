@@ -1,3 +1,4 @@
+import { Check, Copy, History, LogOut, Settings } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { authClient, type User } from "./auth-client";
 import { RunHistory } from "./RunHistory";
@@ -50,7 +51,7 @@ export function AccountMenu({
     <>
       <button
         type="button"
-        className="account-button"
+        className="account-button grid place-items-center border border-solid border-[#dfe3e9] rounded-full size-7 p-0 bg-[#f3f5f7] text-[11px] text-[#6e7887]"
         aria-label="Account"
         popoverTarget="account-menu"
       >
@@ -60,15 +61,17 @@ export function AccountMenu({
         ref={popover}
         id="account-menu"
         popover="auto"
-        className="account-menu"
+        className="account-menu fixed inset-[52px_24px_auto_auto] m-0 w-65 max-w-[calc(100vw_-_32px)] p-1.5 border border-solid border-[#e3e6eb] rounded-[var(--surface-radius)] bg-white text-[#18191c] shadow-[0_6px_24px_#18202c0d]"
         onToggle={() => {
           setCopied(0);
           setError("");
         }}
       >
-        <div className="account-identity">
-          <strong className="account-name">{user.name}</strong>
-          <div className="account-email-row">
+        <div className="account-identity grid gap-1 p-2.5">
+          <strong className="account-name text-[13px] font-[550] wrap-anywhere">
+            {user.name}
+          </strong>
+          <div className="account-email-row flex items-center gap-1.5">
             <span className="account-email">{user.email}</span>
             <button
               type="button"
@@ -86,16 +89,11 @@ export function AccountMenu({
                 }
               }}
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                {copied ? (
-                  <path d="m5 12 4 4L19 6" />
-                ) : (
-                  <>
-                    <rect x="8" y="8" width="12" height="12" rx="2" />
-                    <path d="M16 8V4H4v12h4" />
-                  </>
-                )}
-              </svg>
+              {copied ? (
+                <Check aria-hidden="true" />
+              ) : (
+                <Copy aria-hidden="true" />
+              )}
             </button>
           </div>
         </div>
@@ -117,10 +115,7 @@ export function AccountMenu({
             settings();
           }}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m9.5 3-.7 2.3-1.5.9L5 5.7 2.5 10l1.6 1.8v1.7L2.5 15l2.5 4.3 2.3-.5 1.5.9.7 2.3h5l.7-2.3 1.5-.9 2.3.5 2.5-4.3-1.6-1.5v-1.7l1.6-1.8L19 5.7l-2.3.5-1.5-.9-.7-2.3Z" />
-            <circle cx="12" cy="12.5" r="3" />
-          </svg>
+          <Settings aria-hidden="true" />
           Settings
         </button>
         {user.emailVerified && (
@@ -131,22 +126,20 @@ export function AccountMenu({
               setHistoryOpen(true);
             }}
           >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="8" />
-              <path d="M12 7v5l3 2" />
-            </svg>
+            <History aria-hidden="true" />
             History
           </button>
         )}
         {error && (
-          <p className="form-error" role="alert">
+          <p
+            className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+            role="alert"
+          >
             {error}
           </p>
         )}
         <button type="button" disabled={busy} onClick={logout}>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 4H4v16h5m6-12 4 4-4 4m-7-4h11" />
-          </svg>
+          <LogOut aria-hidden="true" />
           {busy ? "Logging out…" : "Log out"}
         </button>
       </div>

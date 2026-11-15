@@ -1,3 +1,4 @@
+import { ChevronLeft, Download, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { AttemptEvent, RunRecord } from "../../../shared/contracts.ts";
 import { apiFetch } from "../api";
@@ -79,52 +80,49 @@ export function RunDetails({
 
   return (
     <>
-      <div className="drawer-heading">
-        <div className="run-detail-heading">
+      <div className="drawer-heading flex justify-between items-center py-4.5 px-6 border-b border-solid border-b-[#eeeff2]">
+        <div className="run-detail-heading flex items-center gap-2">
           <button
             type="button"
-            className="icon-button"
+            className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
             aria-label="History"
             onClick={back}
           >
-            <svg aria-hidden="true" viewBox="0 0 20 20">
-              <path d="m12 5-5 5 5 5" />
-            </svg>
+            <ChevronLeft aria-hidden="true" />
           </button>
           <h2 id="run-detail-title" tabIndex={-1}>
             Run {id.slice(0, 8)}
           </h2>
         </div>
-        <div className="run-detail-actions">
+        <div className="run-detail-actions flex items-center shrink-0 gap-2">
           {exportUrl && (
             <a
-              className="icon-button"
+              className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
               title="Export JSON"
               href={exportUrl}
               download={`zetafly-run-${id.replace(/[^a-zA-Z0-9_-]/g, "_")}.json`}
             >
-              <svg aria-hidden="true" viewBox="0 0 20 20">
-                <path d="M10 3v9m-4-4 4 4 4-4M4 13v3h12v-3" />
-              </svg>
+              <Download aria-hidden="true" />
               <span className="sr-only">Export JSON</span>
             </a>
           )}
           <button
             type="button"
-            className="icon-button"
+            className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
             onClick={close}
             aria-label="Close history"
           >
-            <svg aria-hidden="true" viewBox="0 0 20 20">
-              <path d="m5 5 10 10M15 5 5 15" />
-            </svg>
+            <X aria-hidden="true" />
           </button>
         </div>
       </div>
-      <div className="account-content run-details">
+      <div className="account-content p-6 run-details">
         {error ? (
           <>
-            <p className="form-error" role="alert">
+            <p
+              className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+              role="alert"
+            >
               {error}
             </p>
             <button
@@ -142,26 +140,33 @@ export function RunDetails({
         ) : (
           <>
             {exportError && (
-              <p className="form-error" role="alert">
+              <p
+                className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+                role="alert"
+              >
                 Could not prepare the export. Reopen this run to try again.
               </p>
             )}
-            <div className="run-result">
+            <div className="flex items-center justify-between gap-2 [border-bottom:1px_solid_#eeeff2] pb-4 text-[13px]">
               <div className="run-row-main">
                 <RunSummaryMetadata run={run} />
               </div>
-              <strong className="run-detail-score">
+              <strong className="run-detail-score shrink-0 tabular-nums">
                 {run.accepted}/{run.attempts}
                 <span className="sr-only"> correct</span>
               </strong>
             </div>
-            {run.error && <p className="form-error">{run.error}</p>}
+            {run.error && (
+              <p className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]">
+                {run.error}
+              </p>
+            )}
             <h3>Attempt history</h3>
             {attempts.length === 0 ? (
               <p>No recorded attempts.</p>
             ) : (
               <section
-                className="run-attempts"
+                className="run-attempts overflow-x-auto max-h-70"
                 // biome-ignore lint/a11y/noNoninteractiveTabindex: The scrollable attempt table needs a keyboard focus target.
                 tabIndex={0}
                 aria-label="Attempt history"
@@ -190,7 +195,7 @@ export function RunDetails({
                 </table>
               </section>
             )}
-            <details className="run-metadata">
+            <details className="run-metadata mt-4 border-t border-solid border-t-[#eeeff2]">
               <summary>Model and settings</summary>
               <dl>
                 <dt>Run ID</dt>

@@ -1,3 +1,4 @@
+import { LogIn, Play, Square, X } from "lucide-react";
 import { useState } from "react";
 import { Account, hasPasswordReset } from "./account/Account";
 import { AccountMenu } from "./account/AccountMenu";
@@ -29,14 +30,14 @@ export function App() {
   const running = ["loading", "running"].includes(state.status);
 
   return (
-    <main className="app">
-      <header className="app-header">
+    <main className="app h-dvh flex flex-col">
+      <header className="app-header h-15 py-0 px-6 flex items-center gap-10 border-b border-solid border-b-[#e8e9ec] shrink-0">
         <h1>zetafly</h1>
 
-        <div className="header-actions">
+        <div className="header-actions flex items-center ml-auto gap-3">
           <button
             type="button"
-            className="run-button"
+            className="run-button flex items-center gap-1.75 bg-[#1b1d22] border border-solid border-[#1b1d22] text-white py-2 px-3.75 rounded-[var(--control-radius)] text-[12px] font-medium"
             title={running ? "Stop the current run" : "Start a new run"}
             disabled={
               session.busy ||
@@ -52,16 +53,14 @@ export function App() {
                 : setAccountOpen(true)
             }
           >
-            <svg aria-hidden="true" viewBox="0 0 16 16">
-              {running ? (
-                <rect x="4" y="4" width="8" height="8" />
-              ) : (
-                <path d="m5 3 8 5-8 5Z" />
-              )}
-            </svg>
+            {running ? (
+              <Square aria-hidden="true" />
+            ) : (
+              <Play aria-hidden="true" />
+            )}
             {running ? "Stop" : "Start"}
           </button>
-          <div className="account-action">
+          <div className="account-action flex items-center">
             {user ? (
               <AccountMenu
                 key={user.id}
@@ -72,12 +71,10 @@ export function App() {
             ) : (
               <button
                 type="button"
-                className="session-button"
+                className="session-button inline-flex items-center gap-1.75 border-0 bg-transparent p-2 text-[12px] text-[#626875]"
                 onClick={() => setAccountOpen(true)}
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M15 4h5v16h-5M9 8l4 4-4 4m-5-4h9" />
-                </svg>
+                <LogIn aria-hidden="true" />
                 Log in
               </button>
             )}
@@ -85,12 +82,16 @@ export function App() {
         </div>
       </header>
       <section
-        className="scene"
+        className="scene flex-1 min-w-0 min-h-0 relative bg-[#f4f3ef] overflow-hidden"
         aria-label={view === "brain" ? "Fly brain" : "Fly computer"}
       >
         <SoundButton sound={sound} />
         <div className="view-switcher">
-          <div className="view-controls" role="tablist" aria-label="View">
+          <div
+            className="view-controls p-0.75 bg-[#f0f1f4] border border-solid border-[#e8e9ed] rounded-[var(--surface-radius)]"
+            role="tablist"
+            aria-label="View"
+          >
             {views.map((item, index) => (
               <button
                 type="button"
@@ -133,7 +134,7 @@ export function App() {
         </div>
         <div
           id="view-panel"
-          className="view-panel"
+          className="view-panel absolute inset-0"
           role="tabpanel"
           aria-labelledby={`view-tab-${view}`}
           // biome-ignore lint/a11y/noNoninteractiveTabindex: The visual tabpanel needs a keyboard focus target.
@@ -155,13 +156,11 @@ export function App() {
             <span>{session.error}</span>
             <button
               type="button"
-              className="icon-button"
+              className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
               aria-label="Dismiss error"
               onClick={session.clearError}
             >
-              <svg aria-hidden="true" viewBox="0 0 20 20">
-                <path d="m5 5 10 10M15 5 5 15" />
-              </svg>
+              <X aria-hidden="true" />
             </button>
           </div>
         )}

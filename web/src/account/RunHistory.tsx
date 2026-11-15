@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { RunSummary } from "../../../shared/contracts.ts";
 import { apiFetch } from "../api";
@@ -99,8 +100,8 @@ export function RunHistory({ close }: { close: () => void }) {
       ref={dialog}
       className={
         selectedId
-          ? "account-dialog run-history"
-          : "account-dialog run-history run-history-list-view"
+          ? "account-dialog w-87.5 max-w-[calc(100vw_-_32px)] p-0 border border-solid border-[#e2e5ea] rounded-[var(--surface-radius)] text-[#18191c] bg-white run-history w-115 h-[min(600px,_calc(100dvh_-_32px))] overscroll-contain"
+          : "account-dialog w-87.5 max-w-[calc(100vw_-_32px)] p-0 border border-solid border-[#e2e5ea] rounded-[var(--surface-radius)] text-[#18191c] bg-white run-history w-115 h-[min(600px,_calc(100dvh_-_32px))] overscroll-contain run-history-list-view overflow-hidden"
       }
       aria-label="Run history"
       onCancel={(event) => {
@@ -123,29 +124,24 @@ export function RunHistory({ close }: { close: () => void }) {
           close={close}
         />
       ) : (
-        <div className="drawer-heading">
+        <div className="drawer-heading flex justify-between items-center py-4.5 px-6 border-b border-solid border-b-[#eeeff2]">
           <h2>Run history</h2>
           <button
             type="button"
-            className="icon-button"
+            className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
             onClick={close}
             aria-label="Close history"
           >
-            <svg aria-hidden="true" viewBox="0 0 20 20">
-              <path d="m5 5 10 10M15 5 5 15" />
-            </svg>
+            <X aria-hidden="true" />
           </button>
         </div>
       )}
       <div className="run-list-panel" hidden={selectedId !== null}>
-        <div className="account-content run-list-content">
+        <div className="account-content p-6 run-list-content">
           <label>
             Search runs
-            <span className="run-search">
-              <svg aria-hidden="true" viewBox="0 0 20 20">
-                <circle cx="8.5" cy="8.5" r="4.5" />
-                <path d="m12 12 4 4" />
-              </svg>
+            <span className="run-search relative block">
+              <Search aria-hidden="true" />
               <input
                 type="search"
                 maxLength={100}
@@ -162,7 +158,10 @@ export function RunHistory({ close }: { close: () => void }) {
               </span>
             )}
             {loading && !result && (
-              <div className="run-skeleton" aria-hidden="true">
+              <div
+                className="run-skeleton border-t border-solid border-t-[#eeeff2]"
+                aria-hidden="true"
+              >
                 <span />
                 <span />
                 <span />
@@ -171,7 +170,10 @@ export function RunHistory({ close }: { close: () => void }) {
             )}
             {result === "error" && !loading ? (
               <>
-                <p className="form-error" role="alert">
+                <p
+                  className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+                  role="alert"
+                >
                   Could not load runs.
                 </p>
                 <button type="button" onClick={() => load(query, page)}>
@@ -190,7 +192,10 @@ export function RunHistory({ close }: { close: () => void }) {
                 </p>
               )}
             {result && result !== "error" && result.runs.length > 0 && (
-              <ul className="run-history-list" aria-busy={loading}>
+              <ul
+                className="run-history-list list-none m-0 p-0 border-t border-solid border-t-[#eeeff2]"
+                aria-busy={loading}
+              >
                 {result.runs.map((run) => (
                   <li key={run.id}>
                     <button
@@ -207,12 +212,15 @@ export function RunHistory({ close }: { close: () => void }) {
                       }}
                     >
                       <span className="run-row-main">
-                        <strong className="run-reference" title={run.id}>
+                        <strong
+                          className="run-reference tabular-nums"
+                          title={run.id}
+                        >
                           Run {run.id.slice(0, 8)}
                         </strong>
                         <RunSummaryMetadata run={run} />
                       </span>
-                      <span className="run-row-result">
+                      <span className="run-row-result text-right">
                         <strong>
                           {typeof run.attempts === "number"
                             ? `${run.accepted}/${run.attempts}`
@@ -220,13 +228,10 @@ export function RunHistory({ close }: { close: () => void }) {
                         </strong>
                         <span className="sr-only">correct</span>
                       </span>
-                      <svg
-                        className="run-row-arrow"
+                      <ChevronRight
                         aria-hidden="true"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="m8 5 5 5-5 5" />
-                      </svg>
+                        className="run-row-arrow"
+                      />
                     </button>
                   </li>
                 ))}
@@ -235,7 +240,7 @@ export function RunHistory({ close }: { close: () => void }) {
           </div>
           {(page > 1 || pages > 1) && (
             <nav
-              className="run-history-pages"
+              className="run-history-pages grid grid-cols-[minmax(0,_1fr)_auto_minmax(0,_1fr)] items-center justify-items-center gap-2 mt-4 text-[12px]"
               aria-label="Run history pagination"
             >
               <button
@@ -244,9 +249,7 @@ export function RunHistory({ close }: { close: () => void }) {
                 disabled={loading || page === 1}
                 onClick={() => load(query, page - 1)}
               >
-                <svg aria-hidden="true" viewBox="0 0 20 20">
-                  <path d="m12 5-5 5 5 5" />
-                </svg>
+                <ChevronLeft aria-hidden="true" />
               </button>
               <span role="status">
                 {pages ? `Page ${page} of ${pages}` : `Page ${page}`}
@@ -257,9 +260,7 @@ export function RunHistory({ close }: { close: () => void }) {
                 disabled={loading || page >= pages}
                 onClick={() => load(query, page + 1)}
               >
-                <svg aria-hidden="true" viewBox="0 0 20 20">
-                  <path d="m8 5 5 5-5 5" />
-                </svg>
+                <ChevronRight aria-hidden="true" />
               </button>
             </nav>
           )}

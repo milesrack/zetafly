@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { outsideDialog } from "../components/dialog";
 import { authClient, type User } from "./auth-client";
@@ -238,7 +239,11 @@ export function Account({
   }
 
   const failure = error && (
-    <p id="account-error" className="form-error" role="alert">
+    <p
+      id="account-error"
+      className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+      role="alert"
+    >
       {error}
     </p>
   );
@@ -246,7 +251,7 @@ export function Account({
   return (
     <dialog
       ref={dialog}
-      className="account-dialog"
+      className="account-dialog w-87.5 max-w-[calc(100vw_-_32px)] p-0 border border-solid border-[#e2e5ea] rounded-[var(--surface-radius)] text-[#18191c] bg-white"
       onCancel={close}
       onKeyDown={(event) => {
         if (event.key === "Escape" && !event.defaultPrevented) {
@@ -257,21 +262,19 @@ export function Account({
       onClick={(event) => outsideDialog(event, close)}
       aria-label={title}
     >
-      <div className="drawer-heading">
+      <div className="drawer-heading flex justify-between items-center py-4.5 px-6 border-b border-solid border-b-[#eeeff2]">
         <h2>{title}</h2>
         <button
           type="button"
-          className="icon-button"
+          className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
           onClick={close}
           aria-label="Close account"
         >
-          <svg aria-hidden="true" viewBox="0 0 20 20">
-            <path d="m5 5 10 10M15 5 5 15" />
-          </svg>
+          <X aria-hidden="true" />
         </button>
       </div>
       {mode === "verify" || mode === "sent" ? (
-        <div className="account-content">
+        <div className="account-content p-6">
           <span className="sr-only" role="status">
             {resent ? "Verification email sent." : ""}
           </span>
@@ -292,7 +295,7 @@ export function Account({
           {mode === "verify" && (
             <button
               type="button"
-              className="form-submit"
+              className="form-submit w-full min-h-10.5 border border-solid border-[#1b1d22] bg-[#1b1d22] text-white rounded-[var(--control-radius)] p-2.5 text-[12px]"
               disabled={busy || remaining > 0}
               aria-describedby={error ? "account-error" : undefined}
               onClick={resend}
@@ -306,7 +309,7 @@ export function Account({
           )}
           <button
             type="button"
-            className="auth-switch"
+            className="auth-switch w-full min-h-10 mt-3 p-2 bg-transparent border-0 rounded-[var(--control-radius)] text-[12px] text-[#586271]"
             disabled={busy}
             onClick={() => {
               setMode("login");
@@ -320,7 +323,7 @@ export function Account({
       ) : (
         <form
           key={mode}
-          className="account-content"
+          className="account-content p-6"
           onInput={() => {
             if (error) {
               setError("");
@@ -349,13 +352,13 @@ export function Account({
             </label>
           )}
           {mode !== "forgot" && (
-            <div className="password-field">
-              <div className="password-heading">
+            <div className="password-field mb-4.5">
+              <div className="password-heading flex items-center justify-between gap-3">
                 <label htmlFor="account-password">Password</label>
                 {mode === "login" && (
                   <button
                     type="button"
-                    className="auth-recovery"
+                    className="auth-recovery min-h-8 p-[5px_0_5px_8px] border-0 bg-transparent text-[11px] text-[#586271]"
                     disabled={busy}
                     onClick={() => {
                       setMode("forgot");
@@ -372,7 +375,7 @@ export function Account({
           {failure}
           <button
             type="submit"
-            className="form-submit"
+            className="form-submit w-full min-h-10.5 border border-solid border-[#1b1d22] bg-[#1b1d22] text-white rounded-[var(--control-radius)] p-2.5 text-[12px]"
             disabled={busy}
             aria-describedby={error ? "account-error" : undefined}
           >
@@ -405,7 +408,7 @@ export function Account({
             <button
               type="button"
               disabled={busy}
-              className="auth-switch"
+              className="auth-switch w-full min-h-10 mt-3 p-2 bg-transparent border-0 rounded-[var(--control-radius)] text-[12px] text-[#586271]"
               onClick={() => {
                 setMode("login");
                 setError("");

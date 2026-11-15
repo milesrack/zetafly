@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { renewAccess } from "../api";
 import { outsideDialog } from "../components/dialog";
@@ -23,7 +24,7 @@ export function ChangePassword({ close }: { close: () => void }) {
   return (
     <dialog
       ref={dialog}
-      className="account-dialog"
+      className="account-dialog w-87.5 max-w-[calc(100vw_-_32px)] p-0 border border-solid border-[#e2e5ea] rounded-[var(--surface-radius)] text-[#18191c] bg-white"
       aria-label="Change password"
       onCancel={(event) => {
         event.preventDefault();
@@ -37,33 +38,35 @@ export function ChangePassword({ close }: { close: () => void }) {
       }}
       onClick={(event) => outsideDialog(event, dismiss)}
     >
-      <div className="drawer-heading">
+      <div className="drawer-heading flex justify-between items-center py-4.5 px-6 border-b border-solid border-b-[#eeeff2]">
         <h2>Change password</h2>
         <button
           type="button"
-          className="icon-button"
+          className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
           aria-label="Close password change"
           disabled={busy}
           onClick={dismiss}
         >
-          <svg aria-hidden="true" viewBox="0 0 20 20">
-            <path d="m5 5 10 10M15 5 5 15" />
-          </svg>
+          <X aria-hidden="true" />
         </button>
       </div>
       {changed ? (
-        <div className="account-content">
+        <div className="account-content p-6">
           <p className="email-confirmation" role="status">
             Your password has been changed. Your other sessions have been logged
             out.
           </p>
-          <button type="button" className="form-submit" onClick={close}>
+          <button
+            type="button"
+            className="form-submit w-full min-h-10.5 border border-solid border-[#1b1d22] bg-[#1b1d22] text-white rounded-[var(--control-radius)] p-2.5 text-[12px]"
+            onClick={close}
+          >
             Done
           </button>
         </div>
       ) : (
         <form
-          className="account-content"
+          className="account-content p-6"
           onSubmit={async (event) => {
             event.preventDefault();
             const form = event.currentTarget;
@@ -111,8 +114,8 @@ export function ChangePassword({ close }: { close: () => void }) {
               disabled={busy}
             />
           </label>
-          <div className="password-field">
-            <div className="password-heading">
+          <div className="password-field mb-4.5">
+            <div className="password-heading flex items-center justify-between gap-3">
               <label htmlFor="change-new-password">New password</label>
             </div>
             <PasswordInput
@@ -134,16 +137,23 @@ export function ChangePassword({ close }: { close: () => void }) {
             />
           </label>
           {error && (
-            <p className="form-error" role="alert">
+            <p
+              className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+              role="alert"
+            >
               {error}
             </p>
           )}
-          <button type="submit" className="form-submit" disabled={busy}>
+          <button
+            type="submit"
+            className="form-submit w-full min-h-10.5 border border-solid border-[#1b1d22] bg-[#1b1d22] text-white rounded-[var(--control-radius)] p-2.5 text-[12px]"
+            disabled={busy}
+          >
             {busy ? "Changing password…" : "Change password"}
           </button>
           <button
             type="button"
-            className="auth-switch"
+            className="auth-switch w-full min-h-10 mt-3 p-2 bg-transparent border-0 rounded-[var(--control-radius)] text-[12px] text-[#586271]"
             disabled={busy}
             onClick={dismiss}
           >

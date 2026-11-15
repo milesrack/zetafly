@@ -1,3 +1,4 @@
+import { Volume2, VolumeX } from "lucide-react";
 import { useEffect, useEffectEvent, useRef } from "react";
 import type { PhysicalFrame } from "../../../shared/contracts.ts";
 import type { Moment } from "../session/moments";
@@ -125,20 +126,17 @@ export function SoundButton({ sound }: { sound: Sound }) {
   return (
     <button
       type="button"
-      className="sound-button"
+      className="sound-button absolute top-4.5 left-[max(24px,_env(safe-area-inset-left))] z-2 inline-flex items-center justify-center gap-1.75 size-11 p-1.75 border border-solid border-[#e8e9ed] rounded-[var(--surface-radius)] bg-[#f0f1f4] text-[var(--muted-text)] text-[11px] shrink-0"
       aria-label={label}
       title={label}
       aria-pressed={!sound.blocked && sound.enabled}
       onClick={sound.blocked ? sound.activate : sound.toggle}
     >
-      <svg viewBox="0 0 20 20" aria-hidden="true">
-        <path d="M3 8h3l4-4v12l-4-4H3Z" />
-        {sound.enabled && !sound.blocked ? (
-          <path d="M13 7a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12" />
-        ) : (
-          <path d="m13 8 4 4m0-4-4 4" />
-        )}
-      </svg>
+      {sound.enabled && !sound.blocked ? (
+        <Volume2 aria-hidden="true" />
+      ) : (
+        <VolumeX aria-hidden="true" />
+      )}
     </button>
   );
 }
