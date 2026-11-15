@@ -30,11 +30,11 @@ export type RunSummary = {
   profile?: { name?: string } | null;
   status: string;
   accepted: number;
+  attempts: number;
 };
 
 export type RunRecord = RunSummary & {
   finishedAt: string;
-  attempts: number;
   settings: Settings;
   error?: string | null;
   profile?: RunSummary["profile"] & { id?: string; sha256?: string | null };

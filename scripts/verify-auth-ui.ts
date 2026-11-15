@@ -153,9 +153,10 @@ for (const engine of [chromium, webkit]) {
           {
             id: `run-${page}`,
             startedAt: "2026-11-09T00:00:00.000Z",
-            profile: { name: query ? "Custom weights" : `Weights ${page}` },
+            profile: { name: query ? "Custom" : `Weights ${page}` },
             status: "completed",
             accepted: 12,
+            attempts: 15,
           },
         ],
       });
@@ -171,19 +172,23 @@ for (const engine of [chromium, webkit]) {
 
     const history = historyPage.getByRole("dialog", { name: "Run history" });
     await history.getByText("Weights 1", { exact: true }).waitFor();
-    await history.getByText("Score: 12", { exact: true }).waitFor();
-    await history.getByRole("button", { name: "Next", exact: true }).click();
+    await history.getByText("12/15", { exact: true }).waitFor();
+    await history
+      .getByRole("button", { name: "Next page", exact: true })
+      .click();
     await history.getByText("Weights 2", { exact: true }).waitFor();
     assert.ok(
       await history
-        .getByRole("button", { name: "Next", exact: true })
+        .getByRole("button", { name: "Next page", exact: true })
         .isDisabled(),
     );
     await history
-      .getByRole("button", { name: "Previous", exact: true })
+      .getByRole("button", { name: "Previous page", exact: true })
       .click();
     await history.getByText("Weights 1", { exact: true }).waitFor();
-    await history.getByRole("button", { name: "Next", exact: true }).click();
+    await history
+      .getByRole("button", { name: "Next page", exact: true })
+      .click();
     await history.getByText("Weights 2", { exact: true }).waitFor();
 
     const searchRequest = historyPage.waitForRequest((request) => {
@@ -196,19 +201,22 @@ for (const engine of [chromium, webkit]) {
     });
     await history.getByRole("searchbox", { name: "Search runs" }).fill("Cust");
     await searchRequest;
-    await history.getByText("Custom weights", { exact: true }).waitFor();
-    await history.getByRole("button", { name: "View run run-1" }).click();
+    await history.getByText("Custom", { exact: true }).waitFor();
+    await history.getByRole("button", { description: "Run ID run-1" }).click();
     await history.getByRole("alert").waitFor();
     failDetails = false;
     await history.getByRole("button", { name: "Retry", exact: true }).click();
     await history.getByRole("heading", { name: "Attempt history" }).waitFor();
     assert.equal(await history.getByRole("row").count(), 3);
     await history
-      .getByRole("cell", { name: "Rejected", exact: true })
+      .getByRole("cell", { name: "Incorrect", exact: true })
       .waitFor();
-    await history
-      .getByRole("cell", { name: "Accepted", exact: true })
-      .waitFor();
+    await history.getByRole("cell", { name: "Correct", exact: true }).waitFor();
+    assert.equal(
+      await history.getByText("test-model-hash", { exact: true }).isVisible(),
+      false,
+    );
+    await history.getByText("Model and settings", { exact: true }).click();
     await history.getByText("test-model-hash", { exact: true }).waitFor();
     await accessibility(historyPage);
 
@@ -223,7 +231,7 @@ for (const engine of [chromium, webkit]) {
     const exportedRecord = JSON.parse(await readFile(exportPath, "utf8"));
     assert.deepEqual(exportedRecord, savedRun);
 
-    await history.getByRole("button", { name: "Back to history" }).click();
+    await history.getByRole("button", { name: "History", exact: true }).click();
     assert.equal(
       await history
         .getByRole("searchbox", { name: "Search runs" })
@@ -232,7 +240,7 @@ for (const engine of [chromium, webkit]) {
     );
     assert.ok(
       await history
-        .getByRole("button", { name: "View run run-1" })
+        .getByRole("button", { description: "Run ID run-1" })
         .evaluate((button) => button === document.activeElement),
     );
     await history.getByRole("button", { name: "Close history" }).click();
