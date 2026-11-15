@@ -1428,17 +1428,9 @@ select {
   .app-header {
     flex-wrap: nowrap;
   }
-  .view-switcher {
-    width: calc(100% - 8px);
-    max-width: 440px;
-  }
-  .view-controls {
-    width: 100%;
-    gap: 4px;
-  }
   .view-controls button {
-    flex: 1 0 auto;
-    padding: 7px 12px;
+    font-size: 14px;
+    padding: 6px 10px;
   }
   .account-menu {
     top: 60px;
