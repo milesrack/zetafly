@@ -1,3 +1,4 @@
+import { Pause, Play, RotateCcw, RotateCw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Choice } from "../components/Choice";
 import { PLAYBACK_SPEEDS, type usePlayback } from "./usePlayback";
@@ -78,15 +79,15 @@ export function BrainTimeline({
         }
       }}
     >
-      <div className="timeline-track">
+      <div className="timeline-track relative h-4.5">
         <div
-          className="timeline-fill"
+          className="timeline-fill bg-[#89929f]"
           style={{
             width: `${rangeDuration ? (position / rangeDuration) * 100 : 0}%`,
           }}
         />
         <input
-          className="timeline-seek"
+          className="timeline-seek absolute inset-0 appearance-none w-full h-4.5 m-0 bg-transparent cursor-pointer touch-none"
           type="range"
           onPointerDown={(event) => {
             if (!event.isPrimary || event.button !== 0) {
@@ -168,54 +169,39 @@ export function BrainTimeline({
             {live ? "LIVE" : formatTime(rangeDuration)}
           </span>
         </div>
-        <div className="timeline-transport">
+        <div className="timeline-transport grid grid-cols-[1fr_28px_28px_28px_1fr] items-center mt-0.5">
           <button
             type="button"
-            className="timeline-skip timeline-back"
+            className="timeline-skip timeline-back col-[2]"
             disabled={position <= 0}
             aria-label="Back 5 seconds"
             title="Back 5 seconds (←)"
             onClick={() => skip(-5)}
           >
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M5 4a7 7 0 1 1-2 9M5 1v4H1" />
-              <text x="10" y="13" textAnchor="middle">
-                5
-              </text>
-            </svg>
+            <RotateCcw aria-hidden="true" />
           </button>
           <button
             type="button"
-            className="timeline-play"
+            className="timeline-play col-[3]"
             aria-label={playing ? "Pause playback" : "Play recording"}
             title={playing ? "Pause playback" : "Play recording"}
             onClick={toggle}
           >
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              {playing ? (
-                <path d="M6 4h3v12H6zm5 0h3v12h-3z" />
-              ) : (
-                <path d="m6 3 11 7-11 7z" />
-              )}
-            </svg>
+            {playing ? (
+              <Pause aria-hidden="true" />
+            ) : (
+              <Play aria-hidden="true" />
+            )}
           </button>
           <button
             type="button"
-            className="timeline-skip timeline-forward"
+            className="timeline-skip timeline-forward col-[4]"
             disabled={live || position >= duration - 0.05}
             aria-label="Forward 5 seconds"
             title="Forward 5 seconds (→)"
             onClick={() => skip(5)}
           >
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path
-                transform="translate(20 0) scale(-1 1)"
-                d="M5 4a7 7 0 1 1-2 9M5 1v4H1"
-              />
-              <text x="10" y="13" textAnchor="middle">
-                5
-              </text>
-            </svg>
+            <RotateCw aria-hidden="true" />
           </button>
           <Choice
             label="Playback speed"

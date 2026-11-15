@@ -1,3 +1,4 @@
+import { Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
 export function WeightUpload({
@@ -16,7 +17,7 @@ export function WeightUpload({
     <>
       <button
         type="button"
-        className="weight-upload"
+        className="weight-upload flex items-center justify-center gap-2.5 w-full m-[14px_0_12px] p-4 border border-dashed border-[#ccd2db] rounded-[var(--control-radius)] bg-[#fafbfc] text-[#4d5867] text-[12px] text-left"
         disabled={disabled || uploading}
         data-dragging={dragging || undefined}
         onClick={() => input.current?.click()}
@@ -38,9 +39,7 @@ export function WeightUpload({
           }
         }}
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" />
-        </svg>
+        <Upload aria-hidden="true" />
         <span>
           {uploading ? "Validating weights…" : "Upload weights"}
           <small>NPZ, up to 64 MB</small>

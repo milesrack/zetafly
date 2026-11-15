@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { outsideDialog } from "../components/dialog";
 import { authClient } from "./auth-client";
@@ -20,7 +21,7 @@ export function DeleteAccount({ close }: { close: () => void }) {
   return (
     <dialog
       ref={dialog}
-      className="account-dialog"
+      className="account-dialog w-87.5 max-w-[calc(100vw_-_32px)] p-0 border border-solid border-[#e2e5ea] rounded-[var(--surface-radius)] text-[#18191c] bg-white"
       aria-label="Delete account"
       onCancel={(event) => {
         event.preventDefault();
@@ -34,22 +35,20 @@ export function DeleteAccount({ close }: { close: () => void }) {
       }}
       onClick={(event) => outsideDialog(event, dismiss)}
     >
-      <div className="drawer-heading">
+      <div className="drawer-heading flex justify-between items-center py-4.5 px-6 border-b border-solid border-b-[#eeeff2]">
         <h2>Delete account</h2>
         <button
           type="button"
-          className="icon-button"
+          className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
           aria-label="Cancel account deletion"
           disabled={busy}
           onClick={dismiss}
         >
-          <svg aria-hidden="true" viewBox="0 0 20 20">
-            <path d="m5 5 10 10M15 5 5 15" />
-          </svg>
+          <X aria-hidden="true" />
         </button>
       </div>
       <form
-        className="account-content"
+        className="account-content p-6"
         onSubmit={async (event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
@@ -94,13 +93,16 @@ export function DeleteAccount({ close }: { close: () => void }) {
           </span>
         </label>
         {error && (
-          <p className="form-error" role="alert">
+          <p
+            className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+            role="alert"
+          >
             {error}
           </p>
         )}
         <button
           type="submit"
-          className="form-submit delete-account-button"
+          className="form-submit w-full min-h-10.5 border border-solid border-[#1b1d22] bg-[#1b1d22] text-white rounded-[var(--control-radius)] p-2.5 text-[12px] delete-account-button"
           disabled={busy}
           aria-describedby="delete-account-warning"
         >
@@ -108,7 +110,7 @@ export function DeleteAccount({ close }: { close: () => void }) {
         </button>
         <button
           type="button"
-          className="auth-switch"
+          className="auth-switch w-full min-h-10 mt-3 p-2 bg-transparent border-0 rounded-[var(--control-radius)] text-[12px] text-[#586271]"
           disabled={busy}
           onClick={dismiss}
         >

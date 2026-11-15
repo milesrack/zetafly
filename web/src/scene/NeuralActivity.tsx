@@ -53,11 +53,14 @@ export function NeuralActivity({
 
   return (
     <section className="neural-panel">
-      <div className="raster-heading">
+      <div className="raster-heading flex items-center justify-between text-[var(--muted-text)] text-[11px]">
         <h2>Neural activity</h2>
         {neural && <span>{ids.length.toLocaleString()} neurons</span>}
       </div>
-      <div ref={container} className="raster">
+      <div
+        ref={container}
+        className="raster mt-3 min-h-22.5 max-h-62.5 overflow-auto"
+      >
         {neural ? (
           <svg
             width={width}
@@ -124,11 +127,13 @@ export function NeuralActivity({
             </text>
           </svg>
         ) : (
-          <div className="activity-empty">No recording yet</div>
+          <div className="activity-empty grid place-items-center min-h-37.5 text-[var(--muted-text)] text-[12px]">
+            No recording yet
+          </div>
         )}
       </div>
       {neural && (
-        <div className="raster-legend">
+        <div className="raster-legend flex gap-3 text-[10px] text-[var(--muted-text)] mt-2.5">
           <span>
             <i className="sensory" />
             Input

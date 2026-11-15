@@ -183,7 +183,7 @@ export function BrainView({ neural, time }: { neural?: Neural; time: number }) {
 
   return (
     <div
-      className="brain-view"
+      className="brain-view bg-[#fafbfc]"
       role="img"
       aria-label="3D FlyWire brain with recorded neuron activity"
     >
@@ -197,7 +197,9 @@ export function BrainView({ neural, time }: { neural?: Neural; time: number }) {
           <OrbitControls enablePan minDistance={3} maxDistance={50} />
         </Canvas>
       ) : (
-        <span className="anatomy-loading">{error || "Loading anatomy…"}</span>
+        <span className="anatomy-loading text-[12px] text-[var(--muted-text)] absolute inset-0 grid place-items-center">
+          {error || "Loading anatomy…"}
+        </span>
       )}
     </div>
   );

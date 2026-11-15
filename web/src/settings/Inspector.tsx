@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { RangeKey, Settings } from "../../../shared/contracts.ts";
 import { ChangePassword } from "../account/ChangePassword";
@@ -68,7 +69,7 @@ export function Inspector({
     <>
       <dialog
         ref={dialog}
-        className="inspector"
+        className="inspector w-97.5 max-w-screen h-dvh max-h-dvh m-[0_0_0_auto] p-0 border-0 border-l border-solid border-l-[#e8e9ec] text-[#18191c] bg-white"
         onCancel={(event) => {
           if (event.target === event.currentTarget) {
             close();
@@ -83,22 +84,20 @@ export function Inspector({
         onClick={(event) => outsideDialog(event, close)}
         aria-label="Settings"
       >
-        <div className="drawer-heading">
+        <div className="drawer-heading flex justify-between items-center py-4.5 px-6 border-b border-solid border-b-[#eeeff2]">
           <h2>Settings</h2>
           <button
             type="button"
-            className="icon-button"
+            className="icon-button border-0 size-7.5 bg-transparent grid place-items-center p-1.5"
             onClick={close}
             aria-label="Close settings"
           >
-            <svg aria-hidden="true" viewBox="0 0 20 20">
-              <path d="m5 5 10 10M15 5 5 15" />
-            </svg>
+            <X aria-hidden="true" />
           </button>
         </div>
-        <div className="settings-content">
-          <section className="weights-settings">
-            <div className="setting">
+        <div className="settings-content p-[6px_24px_24px]">
+          <section className="weights-settings p-[10px_0_22px] border-b border-solid border-b-[#edf0f4]">
+            <div className="setting flex items-center justify-between gap-5 text-[12px] py-3.75 px-0">
               <span>Weights</span>
               {signedIn ? (
                 <WeightPicker
@@ -134,7 +133,7 @@ export function Inspector({
                   uploading={uploading}
                   upload={upload}
                 />
-                <div className="weight-actions">
+                <div className="weight-actions flex items-center gap-4 mt-1">
                   <button type="button" onClick={downloadDefault}>
                     Download default
                   </button>
@@ -151,14 +150,17 @@ export function Inspector({
               </>
             )}
             {error && (
-              <p className="form-error" role="alert">
+              <p
+                className="form-error m-[12px_24px_20px] text-[11px] leading-[1.6] text-[#ab4e47]"
+                role="alert"
+              >
                 {error}
               </p>
             )}
           </section>
           <fieldset disabled={running}>
             <legend>Operations</legend>
-            <div className="operation-options">
+            <div className="operation-options grid grid-cols-[1fr_1fr] gap-3.5">
               {operations.map(([key, label]) => (
                 <label key={key}>
                   <input
@@ -189,13 +191,16 @@ export function Inspector({
                   ? "Addition / subtraction"
                   : "Multiplication / division"}
               </legend>
-              <div className="range-row range-labels">
+              <div className="range-row grid grid-cols-[42px_1fr_1fr] items-center gap-2.5 my-2.25 mx-0 range-labels">
                 <span />
                 <span>From</span>
                 <span>To</span>
               </div>
               {(["left", "right"] as const).map((side) => (
-                <div className="range-row" key={side}>
+                <div
+                  className="range-row grid grid-cols-[42px_1fr_1fr] items-center gap-2.5 my-2.25 mx-0"
+                  key={side}
+                >
                   <span>{side === "left" ? "Left" : "Right"}</span>
                   {(["min", "max"] as const).map((bound) => {
                     const key = `${bank}_${side}_${bound}` as RangeKey;
@@ -213,7 +218,7 @@ export function Inspector({
               ))}
             </fieldset>
           ))}
-          <div className="setting">
+          <div className="setting flex items-center justify-between gap-5 text-[12px] py-3.75 px-0">
             <span>Duration</span>
             <Choice
               label="Duration"
@@ -235,7 +240,10 @@ export function Inspector({
           <fieldset className="sound-settings">
             <legend>Sound</legend>
             {(["keyboard", "music"] as const).map((key) => (
-              <label className="setting" key={key}>
+              <label
+                className="setting flex items-center justify-between gap-5 text-[12px] py-3.75 px-0"
+                key={key}
+              >
                 {key === "keyboard" ? "Keyboard sounds" : "Background music"}
                 <input
                   type="checkbox"
@@ -248,12 +256,12 @@ export function Inspector({
             ))}
           </fieldset>
           {signedIn && (
-            <fieldset className="account-settings">
+            <fieldset className="account-settings mb-0">
               <legend>Account</legend>
-              <div className="account-setting-actions">
+              <div className="account-setting-actions flex flex-wrap items-center gap-3">
                 <button
                   type="button"
-                  className="account-setting-action"
+                  className="account-setting-action flex-none min-h-7.5 py-1.5 px-2.5 border border-solid border-[#dfe2e7] bg-[#e8eaee] text-[#18191c] text-[12px] leading-[16px]"
                   onClick={() => {
                     close();
                     setAccountAction("password");
@@ -263,7 +271,7 @@ export function Inspector({
                 </button>
                 <button
                   type="button"
-                  className="account-setting-action delete-account-button"
+                  className="account-setting-action flex-none min-h-7.5 py-1.5 px-2.5 border border-solid border-[#dfe2e7] bg-[#e8eaee] text-[#18191c] text-[12px] leading-[16px] delete-account-button"
                   onClick={() => {
                     close();
                     setAccountAction("delete");

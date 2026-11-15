@@ -1,3 +1,4 @@
+import { Activity } from "lucide-react";
 import { useState } from "react";
 import type { SessionState } from "../../../shared/contracts.ts";
 import { usePlaybackSound } from "../audio/PlaybackSound";
@@ -75,7 +76,7 @@ export function SessionScene({
         />
       ) : view === "screen" ? (
         <div
-          className="screen-view"
+          className="screen-view flex items-center justify-center bg-white"
           role="img"
           aria-label={
             screen
@@ -100,17 +101,15 @@ export function SessionScene({
         <>
           <button
             type="button"
-            className="activity-button"
+            className="activity-button absolute top-4.5 right-6 flex items-center gap-1.75 border-0 bg-transparent rounded-[var(--control-radius)] text-[11px] py-2 px-2.5 text-[var(--muted-text)]"
             aria-expanded={activity}
             onClick={() => setActivity(!activity)}
           >
-            <svg viewBox="0 0 18 18" aria-hidden="true">
-              <path d="M1 9h3l2-5 3 10 3-7 2 2h3" />
-            </svg>
+            <Activity aria-hidden="true" />
             Neural activity
           </button>
           {activity && (
-            <aside className="spike-panel">
+            <aside className="spike-panel absolute right-6 top-15.5 w-105 max-w-[calc(100%_-_48px)] bg-[#ffffffed] border border-solid border-[#e3e6eb] rounded-[var(--surface-radius)] p-4.5">
               <NeuralActivity
                 neural={playback.selected?.neural}
                 time={playback.selected?.time}
