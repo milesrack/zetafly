@@ -213,6 +213,17 @@ Upload `output/model/weights.npz` in **Settings → Weights**.
 - [OpenAPI definition](openapi.yaml)
 - [SwaggerHub](https://app.swaggerhub.com/apis-docs/poosd-56a/zetafly)
 
+## AI Assistance Disclosure
+
+This project was developed with assistance from generative AI tools:
+
+- **Tool:** OpenAI Codex (GPT-6.1 Sol and GPT-6 Astra)
+- **Dates:** 16 October – 15 November 2026
+- **Scope:** Frontend and backend development, testing, CI/CD, and deployment infrastructure
+- **Nature of use:** Debugging, refactoring, test development, code review, and technical guidance
+
+All AI-generated code was reviewed, tested, and modified to meet assignment requirements. The final implementation reflects our understanding of the concepts.
+
 ## Credits
 
 - [Shiu et al.](https://github.com/philshiu/Drosophila_brain_model): connectivity and reference simulator.
